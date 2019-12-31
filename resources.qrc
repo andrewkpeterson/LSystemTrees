@@ -1,0 +1,8 @@
+<RCC>
+    <qresource prefix="/shaders">
+        <file alias="phong.frag">shaders/phong.frag</file>
+        <file alias="phong.vert">shaders/phong.vert</file>
+        <file alias="quad.frag">shaders/quad.frag</file>
+        <file alias="quad.vert">shaders/quad.vert</file>
+    </qresource>
+</RCC>
