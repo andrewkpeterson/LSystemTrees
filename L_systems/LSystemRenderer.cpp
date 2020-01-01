@@ -1,15 +1,175 @@
 #include "LSystemRenderer.h"
+#include "glm/gtx/transform.hpp"
 
 LSystemRenderer::LSystemRenderer(std::shared_ptr<CS123::GL::Shader> shader) :
-    m_shader(shader)
+    m_shader(shader),
+    cylinder(std::make_unique<Cylinder>(10,10,1,true))
 {
-
+    symbols = {"!", "F", "+", "-", "&", "^", "#", "/", "|", "[", "]", "$"};
+    current_state.position = glm::vec3(0,0,0);
+    current_state.orientation.H = glm::vec3(0,1,0);
+    current_state.orientation.L = glm::vec3(0,0,1);
+    current_state.orientation.U = glm::vec3(1,0,0);
 }
 
 LSystemRenderer::~LSystemRenderer() {
 
 }
 
-LSystemRenderer::renderTree(std::string treestring) {
+/**
+ * Renders the tree using treestring. The symbols in treestring that can
+ * actually affect the structure of the tree are (see pgs. 7, 19, 24, 46, and 57
+ * of The Algorithmic Beatuy of Plants:
+ * -> !(x), which tells us to set the cylinder width to x
+ * -> F(x), which tells us to draw a cylinder of length x
+ * -> +(x), which tells us to turn left (about up vector) by angle x
+ * -> -(x), which tells us to turn right (about up vector) by angle x
+ * -> &(x), which tells us to pitch down (about left vector) by angle x
+ * -> ^(x), which tells us to pitch up (about left vector) by angle x
+ * -> #(x), which tells us to roll left (about heading vector) by angle x
+ * -> /(x), which tells us to roll right (about heading vector) by angle x
+ * -> |, which tells us to turn around 180 degrees about up vector
+ * -> [, push the current state of the turtle on the stack
+ * -> ], pop off the top state of the stack and set it to the current state
+ * -> $, roll the turtle about the heading so that the the left vector is horizontal
+ */
+void LSystemRenderer::renderTree(std::string treestring) {
+    current_state.position = glm::vec3(0,0,0);
+    current_state.orientation.H = glm::vec3(0,1,0);
+    current_state.orientation.L = glm::vec3(0,0,1);
+    current_state.orientation.U = glm::vec3(1,0,0);
+    std::string curr_str = treestring;
+    bool symbols_to_process = true;
+    while (symbols_to_process) {
+        int symbol_idx = findFirstOccurence(curr_str);
+        if (symbol_idx != -1) {
+            std::string symbol = curr_str.substr(symbol_idx, 1);
+            if (symbol.compare("|") == 0  || symbol.compare("[") == 0 || symbol.compare("]") == 0 || symbol.compare("$") == 0) {
+                curr_str = curr_str.substr(symbol_idx + 1);
+                processSymbol(symbol, -1);
+            } else {
+                curr_str = curr_str.substr(symbol_idx + 2);
+                int length_of_num = curr_str.find(")");
+                std::string float_string = curr_str.substr(0, length_of_num);
+                float num = std::strtof(float_string.c_str(), nullptr);
+                curr_str = curr_str.substr(length_of_num + 1);
+                processSymbol(symbol, num);
+            }
+        } else {
+            symbols_to_process = false;
+        }
+    }
+}
 
+void LSystemRenderer::processSymbol(std::string symbol, float arg) {
+    if (symbol.compare("!") == 0) {
+        updateCylinderWidth(arg);
+    } else if (symbol.compare("F") == 0) {
+        drawCylinder(arg);
+    } else if (symbol.compare("+") == 0) {
+        rotate(symbol, arg);
+    } else if (symbol.compare("-") == 0) {
+        rotate(symbol, arg);
+    } else if (symbol.compare("&") == 0) {
+        rotate(symbol, arg);
+    } else if (symbol.compare("^") == 0) {
+        rotate(symbol, arg);
+    } else if (symbol.compare("#") == 0) {
+        rotate(symbol, arg);
+    } else if (symbol.compare("/") == 0) {
+        rotate(symbol, arg);
+    } else if (symbol.compare("|") == 0) {
+        rotate("+", 180);
+    } else if (symbol.compare("[") == 0) {
+        pushState();
+    } else if (symbol.compare("]") == 0) {
+        popState();
+    } else if (symbol.compare("$") == 0) {
+        alignLeftVectorWidthHorizontal();
+    }
+}
+
+void LSystemRenderer::updateCylinderWidth(float width) {
+    current_state.cylinder_width = width;
+}
+
+void LSystemRenderer::drawCylinder(float length) {
+    float width = current_state.cylinder_width;
+    //glm::mat4x4 shrink_mat = glm::scale(glm::vec3(.2,.2,.2));
+    glm::mat4x4 scale_mat = glm::scale(glm::vec3(width, length, width));
+    glm::vec3 U = current_state.orientation.U;
+    glm::vec3 H = current_state.orientation.H;
+    glm::vec3 L = current_state.orientation.L;
+    //To rotate the cylinder in the correct way, we use the fact that the UHL
+    //coordinate frame is defined by 3 orthonormal vectors. We know that taking the
+    //dot products of a point p in XYZ space with the vectors U, H, and L gives us the
+    //coordinates of p in UHL space (i.e. p_UHL = ([U H L]^T)p). We know that the
+    //vertices of the rotated cylinder in UHL space are the same as the unrotated
+    //vertices the the cylinder in XYZ space (i.e. Rotate(p_UHL) = p_XYZ). So, we can
+    //multiply the vertices of the rotated cylinder in UHL space by ([U H L]^T)^(-1) =
+    //([U H L])^T)^T (because [U H L] is a orthogonal matrix). Therefore, we know that
+    //[U H L] is the rotation matrix. Finally, we take the transpose of the matrix
+    //below because in OpenGL, matrices are stored in column-major order.
+    glm::mat4x4 rotate_mat = glm::transpose(glm::mat4x4({U.x, H.x, L.x, 0,
+                                                         U.y, H.y, L.y, 0,
+                                                         U.z, H.z, L.z, 0,
+                                                         0,0,0,1}));
+    glm::vec3 cylinder_center = current_state.position + float(.5) * length * current_state.orientation.H;
+    glm::mat4x4 translate_mat =  glm::translate(glm::vec3(cylinder_center));
+    glm::mat4x4 model = translate_mat * rotate_mat * scale_mat;
+    m_shader->setUniform("model", model);
+    cylinder->draw();
+    current_state.position += length * current_state.orientation.H;
+
+}
+
+void LSystemRenderer::rotate(std::string symbol, float angle) {
+    float rads = glm::radians(angle);
+    if (symbol.compare("+") == 0 || symbol.compare("-") == 0 ) {
+        rads = 1 * (symbol.compare("+") == 0) * rads + -1 * (symbol.compare("-") == 0) * rads;
+        glm::vec3 savedH = current_state.orientation.H;
+        current_state.orientation.H = current_state.orientation.H * glm::cos(rads) - current_state.orientation.L * glm::sin(rads);
+        current_state.orientation.L = savedH * glm::sin(rads) + current_state.orientation.L * glm::cos(rads);
+    } else if (symbol.compare("&") == 0 || symbol.compare("^") == 0) {
+        rads = 1 * (symbol.compare("&") == 0) * rads + -1 * (symbol.compare("^") == 0) * rads;
+        glm::vec3 savedH = current_state.orientation.H;
+        current_state.orientation.H = current_state.orientation.H * glm::cos(rads) + current_state.orientation.U * glm::sin(rads);
+        current_state.orientation.U = -savedH * glm::sin(rads) + current_state.orientation.U * glm::cos(rads);
+    } else {
+        rads = 1 * (symbol.compare("#") == 0) * rads + -1 * (symbol.compare("/") == 0) * rads;
+        glm::vec3 savedL = current_state.orientation.L;
+        current_state.orientation.L = current_state.orientation.L * glm::cos(rads) + current_state.orientation.U * glm::sin(rads);
+        current_state.orientation.U = -savedL * glm::sin(rads) + current_state.orientation.U * glm::cos(rads);
+    }
+}
+
+void LSystemRenderer::pushState() {
+    state_stack.push(current_state);
+}
+
+void LSystemRenderer::popState() {
+    current_state = state_stack.top();
+    state_stack.pop();
+}
+
+void LSystemRenderer::alignLeftVectorWidthHorizontal() {
+    current_state.orientation.L = glm::normalize(glm::cross(glm::vec3(1,0,0), current_state.orientation.H));
+    current_state.orientation.U = glm::normalize(glm::cross(current_state.orientation.H, current_state.orientation.L));
+}
+
+/**
+ * Finds the first occurrence of one of the symbols that affect the
+ * structure of the tree.
+ */
+int LSystemRenderer::findFirstOccurence(std::string str) {
+    //go through every index in str until we find an occurrence of a symbol
+    for (int i = 0; i < str.size(); i++) {
+        std::string curr_symbol = str.substr(i, 1);
+        for (int j = 0; j < symbols.size(); j++) {
+            if (curr_symbol.compare(symbols[j]) == 0) {
+                return i;
+            }
+        }
+    }
+    return -1;
 }

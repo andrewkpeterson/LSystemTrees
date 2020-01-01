@@ -33,7 +33,9 @@ private:
     std::unique_ptr<Shader> quad_shader;
 
     std::unique_ptr<LSystemBuilder> tree_builder;
-    std::unique_ptr<LSystemRenderer> tree_parser;
+    std::unique_ptr<LSystemRenderer> tree_renderer;
+
+    std::string treestring;
 
     glm::vec3 position;
     glm::vec3 look;

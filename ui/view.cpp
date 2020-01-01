@@ -102,8 +102,8 @@ void View::initializeGL() {
     std::cout << tree_builder->buildString() << std::endl;
     std::cout << "check" << std::endl;
     */
-    tree_builder = std::make_unique<LSystemBuilder>(2);
-    tree_builder->setAxiom("A(1,10)");
+    tree_builder = std::make_unique<LSystemBuilder>(10);
+    tree_builder->setAxiom("A(1.0,0.1)");
     tree_builder->addProduction("A","!(%1)F(%0)[&(c)B(%0*b,%1*f)]/(e)A(%0*a,%1*f)",true, 2);
     tree_builder->addProduction("B","!(%1)F(%0)[-(d)$C(%0*b,%1*f)]C(%0*a,%1*f)",true, 2);
     tree_builder->addProduction("C","!(%1)F(%0)[+(d)$B(%0*b,%1*f)]B(%0*a,%1*f)",true, 2);
@@ -113,11 +113,13 @@ void View::initializeGL() {
     tree_builder->addParameter("d", 45);
     tree_builder->addParameter("e", 137.5);
     tree_builder->addParameter("f", .707);
-    std::string str = tree_builder->buildString();
-    std::cout << str << std::endl;
-    std::cout << str.size() << std::endl;
-    std::cout << str.max_size() << std::endl;
+    treestring = tree_builder->buildString();
+    std::cout << treestring << std::endl;
+    std::cout << treestring.size() << std::endl;
+    std::cout << treestring.max_size() << std::endl;
     std::cout << "check" << std::endl;
+
+    tree_renderer = std::make_unique<LSystemRenderer>(phong_shader);
 }
 
 void View::paintGL() {
@@ -127,11 +129,12 @@ void View::paintGL() {
     m_view = glm::lookAt(position, position + look, up);
     phong_shader->bind();
     checkError();
-    phong_shader->setUniform("model", glm::mat4x4());
     phong_shader->setUniform("view", m_view);
     phong_shader->setUniform("projection", m_projection);
-    m_shape->draw();
+    tree_renderer->renderTree(treestring);
     phong_shader->unbind();
+
+
 }
 
 void View::resizeGL(int w, int h) {
