@@ -1,9 +1,12 @@
 #include "LSystemRenderer.h"
 #include "glm/gtx/transform.hpp"
 
-LSystemRenderer::LSystemRenderer(std::shared_ptr<CS123::GL::Shader> shader) :
+LSystemRenderer::LSystemRenderer(std::shared_ptr<CS123::GL::Shader> shader, glm::vec3 tropism) :
     m_shader(shader),
-    cylinder(std::make_unique<Cylinder>(10,10,1,true))
+    cylinder(std::make_unique<Cylinder>(1,20,1,true)),
+    tropism_vec(tropism),
+    branch(std::make_unique<Branch>(1,20,1,true,.8,.6)),
+    leaf(std::make_unique<Leaf>(10,10,1,true,.8,.6))
 {
     symbols = {"!", "F", "+", "-", "&", "^", "#", "/", "|", "[", "]", "$"};
     current_state.position = glm::vec3(0,0,0);
@@ -34,6 +37,7 @@ LSystemRenderer::~LSystemRenderer() {
  * -> $, roll the turtle about the heading so that the the left vector is horizontal
  */
 void LSystemRenderer::renderTree(std::string treestring) {
+    //cylinder = std::make_unique<Cylinder>(1,20,1,true);
     current_state.position = glm::vec3(0,0,0);
     current_state.orientation.H = glm::vec3(0,1,0);
     current_state.orientation.L = glm::vec3(0,0,1);
@@ -118,9 +122,30 @@ void LSystemRenderer::drawCylinder(float length) {
     glm::mat4x4 translate_mat =  glm::translate(glm::vec3(cylinder_center));
     glm::mat4x4 model = translate_mat * rotate_mat * scale_mat;
     m_shader->setUniform("model", model);
-    cylinder->draw();
+    branch->draw();
+
+    //move position forward along branch
     current_state.position += length * current_state.orientation.H;
 
+    //draw leaf
+    //rotate_mat = glm::rotate(float(M_PI/2.0), glm::vec3(0,0,1));
+    scale_mat = glm::scale(glm::vec3(.01, .5, .05));
+    translate_mat = glm::translate(glm::vec3(current_state.position));
+    model = translate_mat * rotate_mat * scale_mat;
+    m_shader->setUniform("model", model);
+    leaf->draw();
+
+    //rotate current_state.orientation.H in direction of tropism vector
+    float e = .1;
+    glm::vec3 axis_of_rotation = glm::normalize(glm::cross(current_state.orientation.H, glm::normalize(tropism_vec)));
+    if (!(std::isnan(axis_of_rotation.x) || std::isnan(axis_of_rotation.y) || std::isnan(axis_of_rotation.z))) {
+        //only perform the tropism rotation if it is defined
+        float angle = e*glm::length(axis_of_rotation);
+        glm::mat4x4 Hrotation = glm::rotate(angle, axis_of_rotation);
+        current_state.orientation.H = glm::normalize(glm::vec3(Hrotation * glm::vec4(current_state.orientation.H, 0)));
+        current_state.orientation.L = glm::normalize(glm::vec3(Hrotation * glm::vec4(current_state.orientation.L, 0)));
+        current_state.orientation.U = glm::normalize(glm::vec3(Hrotation * glm::vec4(current_state.orientation.U, 0)));
+    }
 }
 
 void LSystemRenderer::rotate(std::string symbol, float angle) {
@@ -153,7 +178,7 @@ void LSystemRenderer::popState() {
 }
 
 void LSystemRenderer::alignLeftVectorWidthHorizontal() {
-    current_state.orientation.L = glm::normalize(glm::cross(glm::vec3(1,0,0), current_state.orientation.H));
+    current_state.orientation.L = glm::normalize(glm::cross(glm::vec3(0,1,0), current_state.orientation.H));
     current_state.orientation.U = glm::normalize(glm::cross(current_state.orientation.H, current_state.orientation.L));
 }
 

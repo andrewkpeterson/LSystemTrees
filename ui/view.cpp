@@ -34,7 +34,7 @@ View::View(QWidget *parent) : QGLWidget(ViewFormat(), parent),
     connect(&m_timer, SIGNAL(timeout()), this, SLOT(tick()));
 
     //set up camera parameters
-    position = glm::vec3(1,0,0);
+    position = glm::vec3(10,4,0);
     look = glm::vec3(-1,0,0);
     up = glm::vec3(0,1,0);
     right = glm::vec3(0,0,1);
@@ -102,15 +102,16 @@ void View::initializeGL() {
     std::cout << tree_builder->buildString() << std::endl;
     std::cout << "check" << std::endl;
     */
+
     tree_builder = std::make_unique<LSystemBuilder>(10);
     tree_builder->setAxiom("A(1.0,0.1)");
     tree_builder->addProduction("A","!(%1)F(%0)[&(c)B(%0*b,%1*f)]/(e)A(%0*a,%1*f)",true, 2);
     tree_builder->addProduction("B","!(%1)F(%0)[-(d)$C(%0*b,%1*f)]C(%0*a,%1*f)",true, 2);
     tree_builder->addProduction("C","!(%1)F(%0)[+(d)$B(%0*b,%1*f)]B(%0*a,%1*f)",true, 2);
     tree_builder->addParameter("a", .9);
-    tree_builder->addParameter("b", .6);
-    tree_builder->addParameter("c", 45);
-    tree_builder->addParameter("d", 45);
+    tree_builder->addParameter("b", .7);
+    tree_builder->addParameter("c", 30);
+    tree_builder->addParameter("d", -30);
     tree_builder->addParameter("e", 137.5);
     tree_builder->addParameter("f", .707);
     treestring = tree_builder->buildString();
@@ -119,7 +120,41 @@ void View::initializeGL() {
     std::cout << treestring.max_size() << std::endl;
     std::cout << "check" << std::endl;
 
-    tree_renderer = std::make_unique<LSystemRenderer>(phong_shader);
+    /*
+    tree_builder = std::make_unique<LSystemBuilder>(10);
+    tree_builder->setAxiom("A(1.0,0.1)");
+    tree_builder->addProduction("A","!(%1)F(%0)[&(c)B(%0*a,%1*e)]/(180)[&(d)B(%0*b,%1*e)]",true, 2);
+    tree_builder->addProduction("B","!(%1)F(%0)[+(c)$B(%0*a,%1*e)][-(d)$B(%0*b,%1*e)]",true, 2);
+    tree_builder->addParameter("a", .9);
+    tree_builder->addParameter("b", .8);
+    tree_builder->addParameter("c", 35);
+    tree_builder->addParameter("d", 35);
+    tree_builder->addParameter("e", .707);
+    treestring = tree_builder->buildString();
+    std::cout << treestring << std::endl;
+    std::cout << treestring.size() << std::endl;
+    std::cout << treestring.max_size() << std::endl;
+    std::cout << "check" << std::endl;
+    */
+    /*
+    tree_builder = std::make_unique<LSystemBuilder>(6);
+    tree_builder->setAxiom("!(.01)F(2)/(45)A");
+    tree_builder->addProduction("A","!(.03)F(.5)[&(c)F(.5)A]/(a)[&(c)F(.5)A]/(b)[&(c)F(.5)A]",false, 0);
+    tree_builder->addProduction("F","F(%0*d)",true, 1);
+    tree_builder->addProduction("!","!(%0*e)",true, 1);
+    tree_builder->addParameter("a", 94.74);
+    tree_builder->addParameter("b", 132.63);
+    tree_builder->addParameter("c", 18.95);
+    tree_builder->addParameter("d", 1.109);
+    tree_builder->addParameter("e", 1.732);
+    treestring = tree_builder->buildString();
+    std::cout << treestring << std::endl;
+    std::cout << treestring.size() << std::endl;
+    std::cout << treestring.max_size() << std::endl;
+    std::cout << "check" << std::endl;
+    */
+
+    tree_renderer = std::make_unique<LSystemRenderer>(phong_shader, glm::vec3(.03,-.3,.02));
 }
 
 void View::paintGL() {
@@ -241,41 +276,41 @@ void View::tick() {
     time_elapsed = seconds;
 
     if (J_pressed) {
-        look = glm::normalize((glm::rotate(float(.025), up)*glm::vec4(look,0)).xyz());
+        look = glm::normalize((glm::rotate(float(.06), up)*glm::vec4(look,0)).xyz());
         right = glm::normalize(glm::cross(up, look));
     } else if (L_pressed) {
-        look = glm::normalize((glm::rotate(-float(.025), up)*glm::vec4(look,0)).xyz());
+        look = glm::normalize((glm::rotate(-float(.06), up)*glm::vec4(look,0)).xyz());
         right = glm::normalize(glm::cross(up, look));
     }
     if (I_pressed) {
-        look = glm::normalize((glm::rotate(-float(.025), right)*glm::vec4(look,0)).xyz());
+        look = glm::normalize((glm::rotate(-float(.06), right)*glm::vec4(look,0)).xyz());
     } else if (K_pressed) {
-        look = glm::normalize((glm::rotate(float(.025), right)*glm::vec4(look,0)).xyz());
+        look = glm::normalize((glm::rotate(float(.06), right)*glm::vec4(look,0)).xyz());
     }
     // TODO: Implement the demo update here
     if (W_pressed) {
          //position = position + float(.1)*glm::normalize(glm::vec3(look.xy(),0));
 
-             position = position + float(.02)*look;
+             position = position + float(.2)*look;
              //position.y = 0.1f;
 
          //printf("%f, %f, %f\n", position.x, position.y, position.z);
      } else if (S_pressed) {
          //position = position + float(.1)*glm::normalize(glm::vec3(look.xy(),0));
 
-             position = position - float(.02)*look;
+             position = position - float(.2)*look;
 
              //position.y = 0.1f;
 
      }
      if (A_pressed) {
          //position = position + float(.1)*glm::normalize(glm::vec3(right.xy(),0));
-         position = position + float(.02)*right;
+         position = position + float(.2)*right;
          //position.y = 0.1f;
 
      } else if (D_pressed) {
          //position = position + float(.1)*glm::normalize(glm::vec3(right.xy(),0));
-         position = position - float(.02)*right;
+         position = position - float(.2)*right;
          //position.y = 0.1f;
 
      }

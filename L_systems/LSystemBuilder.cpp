@@ -150,59 +150,65 @@ std::tuple<int, Production> LSystemBuilder::findFirstOccurrence(std::string str)
 std::string LSystemBuilder::replaceParameterSymbols(std::string str) {
     std::vector<std::string> segments;
     std::string sub = str;
-    while (sub.size() > 0) {
+    bool segments_to_replace = true;
+    while (segments_to_replace) {
         //first look for an open parenthesis, which indicates that there might
         //be an expression we have to simplify. Add everything to the left of
         //the open parenthesis and the parenthesis itself in sub to the segments vector.
         int open_paren_idx = sub.find("(");
-        segments.push_back(sub.substr(0, open_paren_idx + 1));
+        if (open_paren_idx == std::string::npos) {
+            segments_to_replace = false;
+            segments.push_back(sub);
+        } else {
+            segments.push_back(sub.substr(0, open_paren_idx + 1));
 
-        //remove the part of sub that we have processed (through the open parenthesis)
-        sub = sub.substr(open_paren_idx + 1);
+            //remove the part of sub that we have processed (through the open parenthesis)
+            sub = sub.substr(open_paren_idx + 1);
 
-        //once we have found an open parenthesis, simplify the comma-separated
-        //expressions and add the expressions to segments until we make it to
-        //a close parenthesis.
-        bool found_close_paren = false;
-        while(!found_close_paren) {
-            int comma_idx = sub.find(",");
-            int close_paren_idx = sub.find(")");
-            int length_to_simplify;
-            //figure out whether the next comma or the next close parenthesis is closer.
-            if (comma_idx == std::string::npos || comma_idx > close_paren_idx) {
-                found_close_paren = true;
-                length_to_simplify = close_paren_idx;
-            } else {
-                length_to_simplify = comma_idx;
-            }
-
-            //simplify the expression and add it to the segments vector
-            std::string to_simplify = sub.substr(0, length_to_simplify);
-            std::vector<std::string> nums_and_parameters = splitByAsterisk(to_simplify);
-            float product = 1;
-            for (int i = 0; i < nums_and_parameters.size(); i++) {
-                float f = std::strtof(nums_and_parameters[i].c_str(), nullptr);
-                if (f == 0.0) {
-                    for (int p_idx = 0; p_idx < parameters.size(); p_idx++) {
-                        if (nums_and_parameters[i].compare(parameters[p_idx].symbol) == 0) {
-                            product *= parameters[p_idx].value;
-                        }
-                    }
+            //once we have found an open parenthesis, simplify the comma-separated
+            //expressions and add the expressions to segments until we make it to
+            //a close parenthesis.
+            bool found_close_paren = false;
+            while(!found_close_paren) {
+                int comma_idx = sub.find(",");
+                int close_paren_idx = sub.find(")");
+                int length_to_simplify;
+                //figure out whether the next comma or the next close parenthesis is closer.
+                if (comma_idx == std::string::npos || comma_idx > close_paren_idx) {
+                    found_close_paren = true;
+                    length_to_simplify = close_paren_idx;
                 } else {
-                    product *= f;
+                    length_to_simplify = comma_idx;
                 }
+
+                //simplify the expression and add it to the segments vector
+                std::string to_simplify = sub.substr(0, length_to_simplify);
+                std::vector<std::string> nums_and_parameters = splitByAsterisk(to_simplify);
+                float product = 1;
+                for (int i = 0; i < nums_and_parameters.size(); i++) {
+                    float f = std::strtof(nums_and_parameters[i].c_str(), nullptr);
+                    if (f == 0.0) {
+                        for (int p_idx = 0; p_idx < parameters.size(); p_idx++) {
+                            if (nums_and_parameters[i].compare(parameters[p_idx].symbol) == 0) {
+                                product *= parameters[p_idx].value;
+                            }
+                        }
+                    } else {
+                        product *= f;
+                    }
+                }
+
+                segments.push_back(std::to_string(product));
+
+                if (found_close_paren) {
+                    segments.push_back(")");
+                } else {
+                    segments.push_back(",");
+                }
+
+                //remove the part of sub that we have processed
+                sub = sub.substr(length_to_simplify + 1);
             }
-
-            segments.push_back(std::to_string(product));
-
-            if (found_close_paren) {
-                segments.push_back(")");
-            } else {
-                segments.push_back(",");
-            }
-
-            //remove the part of sub that we have processed
-            sub = sub.substr(length_to_simplify + 1);
         }
     }
 

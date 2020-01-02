@@ -81,7 +81,9 @@ SOURCES       = ui/mainwindow.cpp \
 		lib/resourceloader.cpp \
 		lib/FileLoader.cpp \
 		L_systems/LSystemBuilder.cpp \
-		L_systems/LSystemRenderer.cpp qrc_resources.cpp \
+		L_systems/LSystemRenderer.cpp \
+		L_systems/Branch.cpp \
+		L_systems/Leaf.cpp qrc_resources.cpp \
 		moc_mainwindow.cpp \
 		moc_view.cpp
 OBJECTS       = mainwindow.o \
@@ -118,6 +120,8 @@ OBJECTS       = mainwindow.o \
 		FileLoader.o \
 		LSystemBuilder.o \
 		LSystemRenderer.o \
+		Branch.o \
+		Leaf.o \
 		qrc_resources.o \
 		moc_mainwindow.o \
 		moc_view.o
@@ -320,7 +324,9 @@ DIST          = shaders/normals/normals.vert \
 		lib/resourceloader.h \
 		lib/FileLoader.h \
 		L_systems/LSystemBuilder.h \
-		L_systems/LSystemRenderer.h ui/mainwindow.cpp \
+		L_systems/LSystemRenderer.h \
+		L_systems/Branch.h \
+		L_systems/Leaf.h ui/mainwindow.cpp \
 		main.cpp \
 		glew-1.10.0/src/glew.c \
 		ui/view.cpp \
@@ -353,7 +359,9 @@ DIST          = shaders/normals/normals.vert \
 		lib/resourceloader.cpp \
 		lib/FileLoader.cpp \
 		L_systems/LSystemBuilder.cpp \
-		L_systems/LSystemRenderer.cpp
+		L_systems/LSystemRenderer.cpp \
+		L_systems/Branch.cpp \
+		L_systems/Leaf.cpp
 QMAKE_TARGET  = project
 DESTDIR       = 
 TARGET        = project.app/Contents/MacOS/project
@@ -727,8 +735,8 @@ distdir: FORCE
 	@test -d $(DISTDIR) || mkdir -p $(DISTDIR)
 	$(COPY_FILE) --parents $(DIST) $(DISTDIR)/
 	$(COPY_FILE) --parents resources.qrc $(DISTDIR)/
-	$(COPY_FILE) --parents ui/mainwindow.h glew-1.10.0/include/GL/glew.h ui/view.h ui/viewformat.h gl/datatype/FBO.h gl/datatype/IBO.h gl/datatype/VAO.h gl/datatype/VBO.h gl/datatype/VBOAttribMarker.h gl/GLDebug.h gl/shaders/ShaderAttribLocations.h gl/textures/DepthBuffer.h gl/textures/RenderBuffer.h gl/textures/Texture.h gl/textures/Texture2D.h gl/textures/TextureParameters.h gl/textures/TextureParametersBuilder.h ui/Settings.h lib/errorchecker.h shapes/CircularShape.h shapes/Cone.h shapes/Cube.h shapes/Cylinder.h shapes/Disc.h shapes/OpenGLShape.h shapes/SpecialShape1.h shapes/Sphere.h shapes/Torus.h shapes/Mesh.h gl/shaders/Shader.h lib/resourceloader.h lib/FileLoader.h L_systems/LSystemBuilder.h L_systems/LSystemRenderer.h $(DISTDIR)/
-	$(COPY_FILE) --parents ui/mainwindow.cpp main.cpp glew-1.10.0/src/glew.c ui/view.cpp ui/viewformat.cpp gl/datatype/FBO.cpp gl/datatype/IBO.cpp gl/datatype/VAO.cpp gl/datatype/VBO.cpp gl/datatype/VBOAttribMarker.cpp gl/GLDebug.cpp gl/textures/DepthBuffer.cpp gl/textures/RenderBuffer.cpp gl/textures/Texture.cpp gl/textures/Texture2D.cpp gl/textures/TextureParameters.cpp gl/textures/TextureParametersBuilder.cpp ui/Settings.cpp lib/errorchecker.cpp shapes/CircularShape.cpp shapes/Cone.cpp shapes/Cube.cpp shapes/Cylinder.cpp shapes/Disc.cpp shapes/OpenGLShape.cpp shapes/SpecialShape1.cpp shapes/Sphere.cpp shapes/Torus.cpp shapes/Mesh.cpp gl/shaders/Shader.cpp lib/resourceloader.cpp lib/FileLoader.cpp L_systems/LSystemBuilder.cpp L_systems/LSystemRenderer.cpp $(DISTDIR)/
+	$(COPY_FILE) --parents ui/mainwindow.h glew-1.10.0/include/GL/glew.h ui/view.h ui/viewformat.h gl/datatype/FBO.h gl/datatype/IBO.h gl/datatype/VAO.h gl/datatype/VBO.h gl/datatype/VBOAttribMarker.h gl/GLDebug.h gl/shaders/ShaderAttribLocations.h gl/textures/DepthBuffer.h gl/textures/RenderBuffer.h gl/textures/Texture.h gl/textures/Texture2D.h gl/textures/TextureParameters.h gl/textures/TextureParametersBuilder.h ui/Settings.h lib/errorchecker.h shapes/CircularShape.h shapes/Cone.h shapes/Cube.h shapes/Cylinder.h shapes/Disc.h shapes/OpenGLShape.h shapes/SpecialShape1.h shapes/Sphere.h shapes/Torus.h shapes/Mesh.h gl/shaders/Shader.h lib/resourceloader.h lib/FileLoader.h L_systems/LSystemBuilder.h L_systems/LSystemRenderer.h L_systems/Branch.h L_systems/Leaf.h $(DISTDIR)/
+	$(COPY_FILE) --parents ui/mainwindow.cpp main.cpp glew-1.10.0/src/glew.c ui/view.cpp ui/viewformat.cpp gl/datatype/FBO.cpp gl/datatype/IBO.cpp gl/datatype/VAO.cpp gl/datatype/VBO.cpp gl/datatype/VBOAttribMarker.cpp gl/GLDebug.cpp gl/textures/DepthBuffer.cpp gl/textures/RenderBuffer.cpp gl/textures/Texture.cpp gl/textures/Texture2D.cpp gl/textures/TextureParameters.cpp gl/textures/TextureParametersBuilder.cpp ui/Settings.cpp lib/errorchecker.cpp shapes/CircularShape.cpp shapes/Cone.cpp shapes/Cube.cpp shapes/Cylinder.cpp shapes/Disc.cpp shapes/OpenGLShape.cpp shapes/SpecialShape1.cpp shapes/Sphere.cpp shapes/Torus.cpp shapes/Mesh.cpp gl/shaders/Shader.cpp lib/resourceloader.cpp lib/FileLoader.cpp L_systems/LSystemBuilder.cpp L_systems/LSystemRenderer.cpp L_systems/Branch.cpp L_systems/Leaf.cpp $(DISTDIR)/
 	$(COPY_FILE) --parents ui/mainwindow.ui $(DISTDIR)/
 
 
@@ -865,6 +873,10 @@ moc_view.cpp: glew-1.10.0/include/GL/glew.h \
 		gl/shaders/Shader.h \
 		L_systems/LSystemBuilder.h \
 		L_systems/LSystemRenderer.h \
+		shapes/Cylinder.h \
+		shapes/Disc.h \
+		shapes/CircularShape.h \
+		L_systems/Branch.h \
 		ui/view.h \
 		/Applications/qt/5.7/clang_64/bin/moc
 	/Applications/qt/5.7/clang_64/bin/moc $(DEFINES) -D__APPLE__ -D__GNUC__=4 -D__APPLE_CC__ -I/Applications/qt/5.7/clang_64/mkspecs/macx-clang -I/Users/andrewpeterson/Documents/projects/graphics/LSystemTrees -I/Users/andrewpeterson/Documents/projects/graphics/LSystemTrees/glm -I/Users/andrewpeterson/Documents/projects/graphics/LSystemTrees/ui -I/Users/andrewpeterson/Documents/projects/graphics/LSystemTrees/glew-1.10.0/include -I/Applications/qt/5.7/clang_64/lib/QtOpenGL.framework/Headers -I/Applications/qt/5.7/clang_64/lib/QtWidgets.framework/Headers -I/Applications/qt/5.7/clang_64/lib/QtGui.framework/Headers -I/Applications/qt/5.7/clang_64/lib/QtXml.framework/Headers -I/Applications/qt/5.7/clang_64/lib/QtCore.framework/Headers -I/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include/c++/v1 -I/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/clang/11.0.0/include -I/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include -I/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.15.sdk/usr/include -F/Applications/qt/5.7/clang_64/lib ui/view.h -o moc_view.cpp
@@ -968,7 +980,11 @@ ui_mainwindow.h: ui/mainwindow.ui \
 		gl/shaders/ShaderAttribLocations.h \
 		gl/shaders/Shader.h \
 		L_systems/LSystemBuilder.h \
-		L_systems/LSystemRenderer.h
+		L_systems/LSystemRenderer.h \
+		shapes/Cylinder.h \
+		shapes/Disc.h \
+		shapes/CircularShape.h \
+		L_systems/Branch.h
 	/Applications/qt/5.7/clang_64/bin/uic ui/mainwindow.ui -o ui_mainwindow.h
 
 compiler_rez_source_make_all:
@@ -1080,6 +1096,10 @@ mainwindow.o: ui/mainwindow.cpp ui/mainwindow.h \
 		gl/shaders/Shader.h \
 		L_systems/LSystemBuilder.h \
 		L_systems/LSystemRenderer.h \
+		shapes/Cylinder.h \
+		shapes/Disc.h \
+		shapes/CircularShape.h \
+		L_systems/Branch.h \
 		/Applications/qt/5.7/clang_64/lib/QtOpenGL.framework/Headers/QGLFormat \
 		ui/Settings.h \
 		/Applications/qt/5.7/clang_64/lib/QtCore.framework/Headers/QObject \
@@ -1194,10 +1214,11 @@ view.o: ui/view.cpp ui/view.h \
 		gl/shaders/Shader.h \
 		L_systems/LSystemBuilder.h \
 		L_systems/LSystemRenderer.h \
-		lib/FileLoader.h \
 		shapes/Cylinder.h \
 		shapes/Disc.h \
 		shapes/CircularShape.h \
+		L_systems/Branch.h \
+		lib/FileLoader.h \
 		shapes/SpecialShape1.h \
 		gl/GLDebug.h \
 		glm/gtx/transform.hpp \
@@ -2276,8 +2297,271 @@ FileLoader.o: lib/FileLoader.cpp lib/FileLoader.h \
 LSystemBuilder.o: L_systems/LSystemBuilder.cpp L_systems/LSystemBuilder.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o LSystemBuilder.o L_systems/LSystemBuilder.cpp
 
-LSystemRenderer.o: L_systems/LSystemRenderer.cpp L_systems/LSystemRenderer.h
+LSystemRenderer.o: L_systems/LSystemRenderer.cpp L_systems/LSystemRenderer.h \
+		gl/shaders/Shader.h \
+		glew-1.10.0/include/GL/glew.h \
+		glm/glm.hpp \
+		glm/detail/_fixes.hpp \
+		glm/fwd.hpp \
+		glm/detail/type_int.hpp \
+		glm/detail/setup.hpp \
+		glm/detail/type_float.hpp \
+		glm/detail/type_vec.hpp \
+		glm/detail/precision.hpp \
+		glm/detail/type_mat.hpp \
+		glm/vec2.hpp \
+		glm/detail/type_vec2.hpp \
+		glm/detail/_swizzle.hpp \
+		glm/detail/_swizzle_func.hpp \
+		glm/detail/type_vec2.inl \
+		glm/vec3.hpp \
+		glm/detail/type_vec3.hpp \
+		glm/detail/type_vec3.inl \
+		glm/vec4.hpp \
+		glm/detail/type_vec4.hpp \
+		glm/detail/type_vec4.inl \
+		glm/mat2x2.hpp \
+		glm/detail/type_mat2x2.hpp \
+		glm/detail/type_mat2x2.inl \
+		glm/mat2x3.hpp \
+		glm/detail/type_mat2x3.hpp \
+		glm/detail/type_mat2x3.inl \
+		glm/mat2x4.hpp \
+		glm/detail/type_mat2x4.hpp \
+		glm/detail/type_mat2x4.inl \
+		glm/mat3x2.hpp \
+		glm/detail/type_mat3x2.hpp \
+		glm/detail/type_mat3x2.inl \
+		glm/mat3x3.hpp \
+		glm/detail/type_mat3x3.hpp \
+		glm/detail/type_mat3x3.inl \
+		glm/mat3x4.hpp \
+		glm/detail/type_mat3x4.hpp \
+		glm/detail/type_mat3x4.inl \
+		glm/mat4x2.hpp \
+		glm/detail/type_mat4x2.hpp \
+		glm/detail/type_mat4x2.inl \
+		glm/mat4x3.hpp \
+		glm/detail/type_mat4x3.hpp \
+		glm/detail/type_mat4x3.inl \
+		glm/mat4x4.hpp \
+		glm/detail/type_mat4x4.hpp \
+		glm/detail/type_mat4x4.inl \
+		glm/trigonometric.hpp \
+		glm/detail/func_trigonometric.hpp \
+		glm/detail/func_trigonometric.inl \
+		glm/detail/_vectorize.hpp \
+		glm/detail/type_vec1.hpp \
+		glm/detail/type_vec1.inl \
+		glm/exponential.hpp \
+		glm/detail/func_exponential.hpp \
+		glm/detail/func_exponential.inl \
+		glm/detail/func_vector_relational.hpp \
+		glm/detail/func_vector_relational.inl \
+		glm/common.hpp \
+		glm/detail/func_common.hpp \
+		glm/detail/func_common.inl \
+		glm/packing.hpp \
+		glm/detail/func_packing.hpp \
+		glm/detail/func_packing.inl \
+		glm/detail/type_half.hpp \
+		glm/detail/type_half.inl \
+		glm/geometric.hpp \
+		glm/detail/func_geometric.hpp \
+		glm/detail/func_geometric.inl \
+		glm/matrix.hpp \
+		glm/detail/func_matrix.hpp \
+		glm/detail/func_matrix.inl \
+		glm/vector_relational.hpp \
+		glm/integer.hpp \
+		glm/detail/func_integer.hpp \
+		glm/detail/func_integer.inl \
+		shapes/Cylinder.h \
+		shapes/OpenGLShape.h \
+		gl/datatype/VBO.h \
+		gl/datatype/VBOAttribMarker.h \
+		shapes/Disc.h \
+		shapes/CircularShape.h \
+		L_systems/Branch.h \
+		glm/gtx/transform.hpp \
+		glm/gtc/matrix_transform.hpp \
+		glm/gtc/matrix_transform.inl \
+		glm/gtx/transform.inl
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o LSystemRenderer.o L_systems/LSystemRenderer.cpp
+
+Branch.o: L_systems/Branch.cpp L_systems/Branch.h \
+		shapes/OpenGLShape.h \
+		glew-1.10.0/include/GL/glew.h \
+		glm/glm.hpp \
+		glm/detail/_fixes.hpp \
+		glm/fwd.hpp \
+		glm/detail/type_int.hpp \
+		glm/detail/setup.hpp \
+		glm/detail/type_float.hpp \
+		glm/detail/type_vec.hpp \
+		glm/detail/precision.hpp \
+		glm/detail/type_mat.hpp \
+		glm/vec2.hpp \
+		glm/detail/type_vec2.hpp \
+		glm/detail/_swizzle.hpp \
+		glm/detail/_swizzle_func.hpp \
+		glm/detail/type_vec2.inl \
+		glm/vec3.hpp \
+		glm/detail/type_vec3.hpp \
+		glm/detail/type_vec3.inl \
+		glm/vec4.hpp \
+		glm/detail/type_vec4.hpp \
+		glm/detail/type_vec4.inl \
+		glm/mat2x2.hpp \
+		glm/detail/type_mat2x2.hpp \
+		glm/detail/type_mat2x2.inl \
+		glm/mat2x3.hpp \
+		glm/detail/type_mat2x3.hpp \
+		glm/detail/type_mat2x3.inl \
+		glm/mat2x4.hpp \
+		glm/detail/type_mat2x4.hpp \
+		glm/detail/type_mat2x4.inl \
+		glm/mat3x2.hpp \
+		glm/detail/type_mat3x2.hpp \
+		glm/detail/type_mat3x2.inl \
+		glm/mat3x3.hpp \
+		glm/detail/type_mat3x3.hpp \
+		glm/detail/type_mat3x3.inl \
+		glm/mat3x4.hpp \
+		glm/detail/type_mat3x4.hpp \
+		glm/detail/type_mat3x4.inl \
+		glm/mat4x2.hpp \
+		glm/detail/type_mat4x2.hpp \
+		glm/detail/type_mat4x2.inl \
+		glm/mat4x3.hpp \
+		glm/detail/type_mat4x3.hpp \
+		glm/detail/type_mat4x3.inl \
+		glm/mat4x4.hpp \
+		glm/detail/type_mat4x4.hpp \
+		glm/detail/type_mat4x4.inl \
+		glm/trigonometric.hpp \
+		glm/detail/func_trigonometric.hpp \
+		glm/detail/func_trigonometric.inl \
+		glm/detail/_vectorize.hpp \
+		glm/detail/type_vec1.hpp \
+		glm/detail/type_vec1.inl \
+		glm/exponential.hpp \
+		glm/detail/func_exponential.hpp \
+		glm/detail/func_exponential.inl \
+		glm/detail/func_vector_relational.hpp \
+		glm/detail/func_vector_relational.inl \
+		glm/common.hpp \
+		glm/detail/func_common.hpp \
+		glm/detail/func_common.inl \
+		glm/packing.hpp \
+		glm/detail/func_packing.hpp \
+		glm/detail/func_packing.inl \
+		glm/detail/type_half.hpp \
+		glm/detail/type_half.inl \
+		glm/geometric.hpp \
+		glm/detail/func_geometric.hpp \
+		glm/detail/func_geometric.inl \
+		glm/matrix.hpp \
+		glm/detail/func_matrix.hpp \
+		glm/detail/func_matrix.inl \
+		glm/vector_relational.hpp \
+		glm/integer.hpp \
+		glm/detail/func_integer.hpp \
+		glm/detail/func_integer.inl \
+		gl/datatype/VBO.h \
+		gl/datatype/VBOAttribMarker.h \
+		shapes/Disc.h \
+		shapes/CircularShape.h \
+		gl/shaders/ShaderAttribLocations.h \
+		shapes/Cube.h
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o Branch.o L_systems/Branch.cpp
+
+Leaf.o: L_systems/Leaf.cpp L_systems/Leaf.h \
+		shapes/OpenGLShape.h \
+		glew-1.10.0/include/GL/glew.h \
+		glm/glm.hpp \
+		glm/detail/_fixes.hpp \
+		glm/fwd.hpp \
+		glm/detail/type_int.hpp \
+		glm/detail/setup.hpp \
+		glm/detail/type_float.hpp \
+		glm/detail/type_vec.hpp \
+		glm/detail/precision.hpp \
+		glm/detail/type_mat.hpp \
+		glm/vec2.hpp \
+		glm/detail/type_vec2.hpp \
+		glm/detail/_swizzle.hpp \
+		glm/detail/_swizzle_func.hpp \
+		glm/detail/type_vec2.inl \
+		glm/vec3.hpp \
+		glm/detail/type_vec3.hpp \
+		glm/detail/type_vec3.inl \
+		glm/vec4.hpp \
+		glm/detail/type_vec4.hpp \
+		glm/detail/type_vec4.inl \
+		glm/mat2x2.hpp \
+		glm/detail/type_mat2x2.hpp \
+		glm/detail/type_mat2x2.inl \
+		glm/mat2x3.hpp \
+		glm/detail/type_mat2x3.hpp \
+		glm/detail/type_mat2x3.inl \
+		glm/mat2x4.hpp \
+		glm/detail/type_mat2x4.hpp \
+		glm/detail/type_mat2x4.inl \
+		glm/mat3x2.hpp \
+		glm/detail/type_mat3x2.hpp \
+		glm/detail/type_mat3x2.inl \
+		glm/mat3x3.hpp \
+		glm/detail/type_mat3x3.hpp \
+		glm/detail/type_mat3x3.inl \
+		glm/mat3x4.hpp \
+		glm/detail/type_mat3x4.hpp \
+		glm/detail/type_mat3x4.inl \
+		glm/mat4x2.hpp \
+		glm/detail/type_mat4x2.hpp \
+		glm/detail/type_mat4x2.inl \
+		glm/mat4x3.hpp \
+		glm/detail/type_mat4x3.hpp \
+		glm/detail/type_mat4x3.inl \
+		glm/mat4x4.hpp \
+		glm/detail/type_mat4x4.hpp \
+		glm/detail/type_mat4x4.inl \
+		glm/trigonometric.hpp \
+		glm/detail/func_trigonometric.hpp \
+		glm/detail/func_trigonometric.inl \
+		glm/detail/_vectorize.hpp \
+		glm/detail/type_vec1.hpp \
+		glm/detail/type_vec1.inl \
+		glm/exponential.hpp \
+		glm/detail/func_exponential.hpp \
+		glm/detail/func_exponential.inl \
+		glm/detail/func_vector_relational.hpp \
+		glm/detail/func_vector_relational.inl \
+		glm/common.hpp \
+		glm/detail/func_common.hpp \
+		glm/detail/func_common.inl \
+		glm/packing.hpp \
+		glm/detail/func_packing.hpp \
+		glm/detail/func_packing.inl \
+		glm/detail/type_half.hpp \
+		glm/detail/type_half.inl \
+		glm/geometric.hpp \
+		glm/detail/func_geometric.hpp \
+		glm/detail/func_geometric.inl \
+		glm/matrix.hpp \
+		glm/detail/func_matrix.hpp \
+		glm/detail/func_matrix.inl \
+		glm/vector_relational.hpp \
+		glm/integer.hpp \
+		glm/detail/func_integer.hpp \
+		glm/detail/func_integer.inl \
+		gl/datatype/VBO.h \
+		gl/datatype/VBOAttribMarker.h \
+		shapes/Disc.h \
+		shapes/CircularShape.h \
+		gl/shaders/ShaderAttribLocations.h \
+		shapes/Cube.h
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o Leaf.o L_systems/Leaf.cpp
 
 qrc_resources.o: qrc_resources.cpp 
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o qrc_resources.o qrc_resources.cpp
