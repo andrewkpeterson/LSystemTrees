@@ -2,21 +2,43 @@
 #define SETTINGS_H
 
 #include <QObject>
+#include "glm.hpp"
+
+enum TreeType {
+    TT_MONOPODIAL, TT_SYMPODIAL, TT_TERNARY
+};
+
+enum LeafType {
+    LT_LONG, LT_MAPLE
+};
 
 struct Settings {
     // Loads settings from disk, or fills in default values if no saved settings exist.
     void loadSettingsOrDefaults();
 
-    bool use_shadows;
-    bool use_ambient_occlusion;
-    bool display_ssao_map;
     float cameraNear;
     float cameraFar;
     float cameraFov;
-    float power;
-    float radius;
-    int kernel_size;
 
+    float param_a;
+    float param_b;
+    float param_c;
+    float param_d;
+    float param_e;
+
+    float tropism_constant;
+    glm::vec3 tropism_vector;
+
+    bool use_leaves;
+    bool use_flowers;
+    glm::vec3 leaf_size;
+
+    float branch_base_radius;
+    float branch_top_radius;
+
+    TreeType treetype;
+
+    LeafType leaftype;
 
 };
 

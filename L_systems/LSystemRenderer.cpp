@@ -50,14 +50,15 @@ void LSystemRenderer::renderTree(std::string treestring) {
             std::string symbol = curr_str.substr(symbol_idx, 1);
             if (symbol.compare("|") == 0  || symbol.compare("[") == 0 || symbol.compare("]") == 0 || symbol.compare("$") == 0) {
                 curr_str = curr_str.substr(symbol_idx + 1);
-                processSymbol(symbol, -1);
+                processSymbol(symbol, -1, false);
             } else {
                 curr_str = curr_str.substr(symbol_idx + 2);
                 int length_of_num = curr_str.find(")");
                 std::string float_string = curr_str.substr(0, length_of_num);
                 float num = std::strtof(float_string.c_str(), nullptr);
                 curr_str = curr_str.substr(length_of_num + 1);
-                processSymbol(symbol, num);
+                bool terminal_node = checkTerminalNode(curr_str);
+                processSymbol(symbol, num, terminal_node);
             }
         } else {
             symbols_to_process = false;
@@ -65,11 +66,23 @@ void LSystemRenderer::renderTree(std::string treestring) {
     }
 }
 
-void LSystemRenderer::processSymbol(std::string symbol, float arg) {
+bool LSystemRenderer::checkTerminalNode(std::string str) {
+    int next_branch = str.find("F");
+    for (int i = next_branch - 1; i >= 0; i--) {
+        if (str.substr(i, 1).compare("]") == 0) {
+            return true;
+        } else if (str.substr(i, 1).compare("[") == 0) {
+            return false;
+        }
+    }
+    return false;
+}
+
+void LSystemRenderer::processSymbol(std::string symbol, float arg, bool terminal_node) {
     if (symbol.compare("!") == 0) {
         updateCylinderWidth(arg);
     } else if (symbol.compare("F") == 0) {
-        drawCylinder(arg);
+        drawBranch(arg, terminal_node);
     } else if (symbol.compare("+") == 0) {
         rotate(symbol, arg);
     } else if (symbol.compare("-") == 0) {
@@ -97,7 +110,7 @@ void LSystemRenderer::updateCylinderWidth(float width) {
     current_state.cylinder_width = width;
 }
 
-void LSystemRenderer::drawCylinder(float length) {
+void LSystemRenderer::drawBranch(float length, bool terminal_node) {
     float width = current_state.cylinder_width;
     //glm::mat4x4 shrink_mat = glm::scale(glm::vec3(.2,.2,.2));
     glm::mat4x4 scale_mat = glm::scale(glm::vec3(width, length, width));
@@ -129,11 +142,13 @@ void LSystemRenderer::drawCylinder(float length) {
 
     //draw leaf
     //rotate_mat = glm::rotate(float(M_PI/2.0), glm::vec3(0,0,1));
-    scale_mat = glm::scale(glm::vec3(.01, .5, .05));
-    translate_mat = glm::translate(glm::vec3(current_state.position));
-    model = translate_mat * rotate_mat * scale_mat;
-    m_shader->setUniform("model", model);
-    leaf->draw();
+    if (terminal_node) {
+        scale_mat = glm::scale(glm::vec3(.01, .5, .05));
+        translate_mat = glm::translate(glm::vec3(current_state.position));
+        model = translate_mat * rotate_mat * scale_mat;
+        m_shader->setUniform("model", model);
+        leaf->draw();
+    }
 
     //rotate current_state.orientation.H in direction of tropism vector
     float e = .1;

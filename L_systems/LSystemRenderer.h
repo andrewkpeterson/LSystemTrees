@@ -41,13 +41,14 @@ private:
     glm::vec3 tropism_vec;
 
     int findFirstOccurence(std::string str);
-    void processSymbol(std::string symbol, float arg);
+    void processSymbol(std::string symbol, float arg, bool terminal_node);
     void updateCylinderWidth(float width);
-    void drawCylinder(float length);
+    void drawBranch(float length, bool terminal_node);
     void rotate(std::string symbol, float arg);
     void pushState();
     void popState();
     void alignLeftVectorWidthHorizontal();
+    bool checkTerminalNode(std::string str);
 
 };
 

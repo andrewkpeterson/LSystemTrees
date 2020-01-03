@@ -105,9 +105,9 @@ void View::initializeGL() {
 
     tree_builder = std::make_unique<LSystemBuilder>(10);
     tree_builder->setAxiom("A(1.0,0.1)");
-    tree_builder->addProduction("A","!(%1)F(%0)[&(c)B(%0*b,%1*f)]/(e)A(%0*a,%1*f)",true, 2);
-    tree_builder->addProduction("B","!(%1)F(%0)[-(d)$C(%0*b,%1*f)]C(%0*a,%1*f)",true, 2);
-    tree_builder->addProduction("C","!(%1)F(%0)[+(d)$B(%0*b,%1*f)]B(%0*a,%1*f)",true, 2);
+    tree_builder->addProduction("A","!(%1)F(%0)[&(c)B(%0*b,%1*.707)]/(e)A(%0*a,%1*.707)",true, 2);
+    tree_builder->addProduction("B","!(%1)F(%0)[-(d)$C(%0*b,%1*.707)]C(%0*a,%1*.707)",true, 2);
+    tree_builder->addProduction("C","!(%1)F(%0)[+(d)$B(%0*b,%1*.707)]B(%0*a,%1*.707)",true, 2);
     tree_builder->addParameter("a", .9);
     tree_builder->addParameter("b", .7);
     tree_builder->addParameter("c", 30);
@@ -155,6 +155,10 @@ void View::initializeGL() {
     */
 
     tree_renderer = std::make_unique<LSystemRenderer>(phong_shader, glm::vec3(.03,-.3,.02));
+}
+
+void View::makeTreeMesh() {
+
 }
 
 void View::paintGL() {
@@ -317,9 +321,15 @@ void View::tick() {
     // Flag this view for repainting (Qt will call paintGL() soon after)
     char buffer [50];
     sprintf(buffer, "pos: (%f, %f, %f)",position.x, position.y, position.z);
-    std::cout << buffer << std::endl;
+    //std::cout << buffer << std::endl;
     sprintf(buffer, "look: (%f, %f, %f)",look.x, look.y, look.z);
-    std::cout << buffer << std::endl;
+    //std::cout << buffer << std::endl;
 
     update();
+}
+
+void View::settingsChanged() {
+    //remake the tree
+    makeTreeMesh();
+
 }

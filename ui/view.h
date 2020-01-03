@@ -20,6 +20,8 @@ public:
     View(QWidget *parent);
     ~View();
 
+    void settingsChanged();
+
 private:
     QTime m_time;
     QTimer m_timer;
@@ -34,6 +36,8 @@ private:
 
     std::unique_ptr<LSystemBuilder> tree_builder;
     std::unique_ptr<LSystemRenderer> tree_renderer;
+
+    std::shared_ptr<Mesh> tree_mesh;
 
     std::string treestring;
 
@@ -66,6 +70,8 @@ private:
 
     void keyPressEvent(QKeyEvent *event);
     void keyReleaseEvent(QKeyEvent *event);
+
+    void makeTreeMesh();
 
 private slots:
     void tick();
