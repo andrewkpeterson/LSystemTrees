@@ -51,9 +51,6 @@ private slots:
 
     void on_leaf_x_textChanged(const QString &arg1);
 
-    void on_leaf_y_textChanged(const QString &arg1);
-
-
     void on_param1_textChanged(const QString &arg1);
 
     void on_param2_textChanged(const QString &arg1);

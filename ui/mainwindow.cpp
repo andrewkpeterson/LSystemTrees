@@ -131,12 +131,6 @@ void MainWindow::on_leaf_x_textChanged(const QString &arg1)
     ui->view->settingsChanged();
 }
 
-void MainWindow::on_leaf_y_textChanged(const QString &arg1)
-{
-    settings.leaf_size.y = std::strtof(arg1.toStdString().c_str(), nullptr);
-    ui->view->settingsChanged();
-}
-
 void MainWindow::on_leaf_z_textChanged(const QString &arg1)
 {
     settings.leaf_size.z = std::strtof(arg1.toStdString().c_str(), nullptr);
