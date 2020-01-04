@@ -43,6 +43,8 @@ public:
      */
     virtual void changeShapeSettings(int param1, int param2, float param3);
 
+    const std::vector<float> &getVertData();
+
 protected:
     /**
      * Appends the vector toAppend to vec

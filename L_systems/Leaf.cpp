@@ -36,8 +36,8 @@ void Leaf::changeShapeSettings(int param1, int param2, float param3) {
 }
 
 void Leaf::draw() {
-    //base->draw();
-    //top->draw();
+    base->draw();
+    top->draw();
     OpenGLShape::draw();
 }
 

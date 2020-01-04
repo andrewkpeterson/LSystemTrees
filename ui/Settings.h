@@ -12,6 +12,10 @@ enum LeafType {
     LT_LONG, LT_MAPLE
 };
 
+enum LeafPlacementType {
+     LPT_TERMINAL, LPT_RANDOM
+};
+
 struct Settings {
     // Loads settings from disk, or fills in default values if no saved settings exist.
     void loadSettingsOrDefaults();
@@ -39,6 +43,14 @@ struct Settings {
     TreeType treetype;
 
     LeafType leaftype;
+
+    LeafPlacementType leaf_placementype;
+
+    float leaf_placement_thickness;
+
+    int iterations;
+
+    bool changed_treetype;
 
 };
 

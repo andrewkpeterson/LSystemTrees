@@ -116,6 +116,29 @@
          </widget>
         </item>
         <item>
+         <widget class="QGroupBox" name="groupBox_5">
+          <property name="title">
+           <string/>
+          </property>
+          <layout class="QHBoxLayout" name="horizontalLayout_4">
+           <item>
+            <widget class="QLabel" name="label_41">
+             <property name="text">
+              <string>Iterations</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QLineEdit" name="iterations">
+             <property name="text">
+              <string>6</string>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </widget>
+        </item>
+        <item>
          <widget class="QGroupBox" name="groupBox_6">
           <property name="title">
            <string/>
@@ -345,6 +368,9 @@
              <property name="text">
               <string>Show Flowers</string>
              </property>
+             <property name="checked">
+              <bool>true</bool>
+             </property>
             </widget>
            </item>
            <item row="12" column="1">
@@ -366,6 +392,9 @@
              <property name="text">
               <string>Show Leaves</string>
              </property>
+             <property name="checked">
+              <bool>true</bool>
+             </property>
             </widget>
            </item>
            <item row="3" column="0" colspan="4">
@@ -375,7 +404,7 @@
              </property>
              <layout class="QGridLayout" name="gridLayout_3">
               <item row="0" column="0">
-               <widget class="QRadioButton" name="radioButton_8">
+               <widget class="QRadioButton" name="terminal_nodes">
                 <property name="text">
                  <string>Leaves Only At Terminal Nodes</string>
                 </property>
@@ -385,9 +414,9 @@
                </widget>
               </item>
               <item row="3" column="0">
-               <widget class="QGroupBox" name="groupBox_5">
+               <widget class="QGroupBox" name="thickness_box">
                 <property name="enabled">
-                 <bool>false</bool>
+                 <bool>true</bool>
                 </property>
                 <property name="title">
                  <string/>
@@ -396,7 +425,7 @@
                  <item>
                   <widget class="QLabel" name="label_29">
                    <property name="enabled">
-                    <bool>false</bool>
+                    <bool>true</bool>
                    </property>
                    <property name="text">
                     <string>Leaves Appear at Branch Thickness:</string>
@@ -404,9 +433,9 @@
                   </widget>
                  </item>
                  <item>
-                  <widget class="QLineEdit" name="tropism_x_2">
+                  <widget class="QLineEdit" name="thickness">
                    <property name="enabled">
-                    <bool>false</bool>
+                    <bool>true</bool>
                    </property>
                    <property name="text">
                     <string>0</string>
@@ -417,7 +446,7 @@
                </widget>
               </item>
               <item row="1" column="0">
-               <widget class="QRadioButton" name="radioButton_7">
+               <widget class="QRadioButton" name="random_leaf_placement">
                 <property name="text">
                  <string>Random Leaf Placement</string>
                 </property>
@@ -668,6 +697,7 @@
        <zorder>groupBox_7</zorder>
        <zorder>groupBox_8</zorder>
        <zorder>groupBox_9</zorder>
+       <zorder>groupBox_5</zorder>
       </widget>
      </widget>
     </item>

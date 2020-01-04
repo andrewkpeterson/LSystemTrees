@@ -1,5 +1,6 @@
 #include "LSystemBuilder.h"
 #include <algorithm>
+#include "Settings.h"
 
 std::vector<std::string> splitByAsterisk(std::string str) {
     std::vector<std::string> ret_vec;
@@ -20,7 +21,48 @@ std::vector<std::string> splitByAsterisk(std::string str) {
 LSystemBuilder::LSystemBuilder(int iterations) :
     num_iterations(iterations)
 {
+    if (settings.treetype == TT_MONOPODIAL) {
+        setAxiom("A(1.0,0.1)");
+        addProduction("A","!(%1)F(%0)[&(c)B(%0*b,%1*.707)]/(e)A(%0*a,%1*.707)",true, 2);
+        addProduction("B","!(%1)F(%0)[-(d)$C(%0*b,%1*.707)]C(%0*a,%1*.707)",true, 2);
+        addProduction("C","!(%1)F(%0)[+(d)$B(%0*b,%1*.707)]B(%0*a,%1*.707)",true, 2);
+        addParameter("a", settings.param_a);
+        addParameter("b", settings.param_b);
+        addParameter("c", settings.param_c);
+        addParameter("d", settings.param_d);
+        addParameter("e", settings.param_e);
+    } else if (settings.treetype == TT_SYMPODIAL) {
+        setAxiom("A(1.0,0.1)");
+        addProduction("A","!(%1)F(%0)[&(c)B(%0*a,%1*e)]/(180)[&(d)B(%0*b,%1*e)]",true, 2);
+        addProduction("B","!(%1)F(%0)[+(c)$B(%0*a,%1*e)][-(d)$B(%0*b,%1*e)]",true, 2);
+        addParameter("a", settings.param_a);
+        addParameter("b", settings.param_b);
+        addParameter("c", settings.param_c);
+        addParameter("d", settings.param_d);
+        addParameter("e", settings.param_e);
+    } else if (settings.treetype == TT_TERNARY) {
 
+        setAxiom("!(.4)F(2)/(45)A(.4)");
+        addProduction("A","!(%0)F(.5)/(120)[&(c)!(%0*e)F(.5)B(%0*e*e)]/(120)[&(c)!(%0*e)F(.5)A(%0*e*e)]/(120)[&(c)!(%0*e)F(.5)A(%0*e*e)]",true, 1);
+        addProduction("B","!(%0)F(.5)/(120)[&(c)!(%0*e)F(.5)B(%0*e*e)]/(180)[&(c)!(%0*e)F(.5)A(%0*e*e)]",true, 1);
+        addProduction("F","F(%0*d)",true, 1);
+        //addProduction("!","!(%0*e)",true, 1);
+        addParameter("a", settings.param_a);
+        addParameter("b", settings.param_b);
+        addParameter("c", settings.param_c);
+        addParameter("d", settings.param_d);
+        addParameter("e", settings.param_e);
+
+        /*
+        setAxiom("F(1.0)A(1.0,0.2)");
+        addProduction("A","!(%1)F(%0)/(120)[&(c)F(%0*a)A(%0*a,%1*e)]/(120)[&(c)F(%0*a)A(%0*a,%1*e)]/(120)[&(c)F(%0*a)A(%0*a,%1*e)]",true, 2);
+        addParameter("a", settings.param_a);
+        addParameter("b", settings.param_b);
+        addParameter("c", settings.param_c);
+        addParameter("d", settings.param_d);
+        addParameter("e", settings.param_e);
+        */
+    }
 }
 
 LSystemBuilder::~LSystemBuilder() {

@@ -5,8 +5,8 @@
 #include <stack>
 #include "gl/shaders/Shader.h"
 #include "shapes/Cylinder.h"
-#include "Branch.h"
-#include "Leaf.h"
+#include "BranchTriangles.h"
+#include "LeafTriangles.h"
 
 
 struct Orientation {
@@ -20,15 +20,16 @@ struct TurtleState {
     Orientation orientation;
     glm::vec3 position;
     float cylinder_width;
+    unsigned int square_bracket_depth;
 };
 
 
 class LSystemRenderer
 {
 public:
-    LSystemRenderer(std::shared_ptr<CS123::GL::Shader> shader, glm::vec3 tropism);
+    LSystemRenderer(std::shared_ptr<CS123::GL::Shader> shader);
     ~LSystemRenderer();
-    void renderTree(std::string treestring);
+    std::shared_ptr<OpenGLShape> renderTree(std::string treestring);
 
 private:
     std::shared_ptr<CS123::GL::Shader> m_shader;
@@ -36,19 +37,22 @@ private:
     std::stack<TurtleState> state_stack;
     std::vector<std::string> symbols;
     std::unique_ptr<Cylinder> cylinder;
-    std::unique_ptr<Branch> branch;
-    std::unique_ptr<Leaf> leaf;
-    glm::vec3 tropism_vec;
+    std::unique_ptr<BranchTriangles> branch;
+    std::unique_ptr<LeafTriangles> leaf;
+    std::shared_ptr<OpenGLShape> tree_mesh;
+    std::vector<float> mesh_data;
 
     int findFirstOccurence(std::string str);
-    void processSymbol(std::string symbol, float arg, bool terminal_node);
+    void processSymbol(std::string symbol, float arg, bool terminal_node, float nextWidth);
     void updateCylinderWidth(float width);
-    void drawBranch(float length, bool terminal_node);
+    void drawBranch(float length, bool terminal_node, float next_width);
     void rotate(std::string symbol, float arg);
     void pushState();
     void popState();
     void alignLeftVectorWidthHorizontal();
     bool checkTerminalNode(std::string str);
+    void appendToVertVector(const std::vector<float> &vec, glm::mat4x4 model_mat, glm::mat3x3 inverse_transpose_model_mat);
+    float findNextWidth(std::string curr_str);
 
 };
 

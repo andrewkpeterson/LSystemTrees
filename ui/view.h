@@ -12,6 +12,8 @@
 #include "gl/shaders/Shader.h"
 #include "L_systems/LSystemBuilder.h"
 #include "L_systems/LSystemRenderer.h"
+#include "L_systems/BranchTriangles.h"
+#include "shapes/DiscTriangles.h"
 
 class View : public QGLWidget {
     Q_OBJECT
@@ -37,7 +39,10 @@ private:
     std::unique_ptr<LSystemBuilder> tree_builder;
     std::unique_ptr<LSystemRenderer> tree_renderer;
 
-    std::shared_ptr<Mesh> tree_mesh;
+    std::shared_ptr<OpenGLShape> tree_mesh;
+
+    std::unique_ptr<DiscTriangles> disc_triangles;
+    std::unique_ptr<BranchTriangles> branch_triangles;
 
     std::string treestring;
 

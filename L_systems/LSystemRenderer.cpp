@@ -1,18 +1,21 @@
 #include "LSystemRenderer.h"
 #include "glm/gtx/transform.hpp"
+#include "Settings.h"
+#include "gl/datatype/VAO.h"
+#include "gl/shaders/ShaderAttribLocations.h"
 
-LSystemRenderer::LSystemRenderer(std::shared_ptr<CS123::GL::Shader> shader, glm::vec3 tropism) :
+LSystemRenderer::LSystemRenderer(std::shared_ptr<CS123::GL::Shader> shader) :
     m_shader(shader),
     cylinder(std::make_unique<Cylinder>(1,20,1,true)),
-    tropism_vec(tropism),
-    branch(std::make_unique<Branch>(1,20,1,true,.8,.6)),
-    leaf(std::make_unique<Leaf>(10,10,1,true,.8,.6))
+    branch(std::make_unique<BranchTriangles>(1,20,1, settings.branch_base_radius, settings.branch_top_radius)),
+    leaf(std::make_unique<LeafTriangles>(10,10,1,.8,.6))
 {
     symbols = {"!", "F", "+", "-", "&", "^", "#", "/", "|", "[", "]", "$"};
     current_state.position = glm::vec3(0,0,0);
     current_state.orientation.H = glm::vec3(0,1,0);
     current_state.orientation.L = glm::vec3(0,0,1);
     current_state.orientation.U = glm::vec3(1,0,0);
+    current_state.square_bracket_depth = 0;
 }
 
 LSystemRenderer::~LSystemRenderer() {
@@ -36,7 +39,7 @@ LSystemRenderer::~LSystemRenderer() {
  * -> ], pop off the top state of the stack and set it to the current state
  * -> $, roll the turtle about the heading so that the the left vector is horizontal
  */
-void LSystemRenderer::renderTree(std::string treestring) {
+std::shared_ptr<OpenGLShape> LSystemRenderer::renderTree(std::string treestring) {
     //cylinder = std::make_unique<Cylinder>(1,20,1,true);
     current_state.position = glm::vec3(0,0,0);
     current_state.orientation.H = glm::vec3(0,1,0);
@@ -50,7 +53,7 @@ void LSystemRenderer::renderTree(std::string treestring) {
             std::string symbol = curr_str.substr(symbol_idx, 1);
             if (symbol.compare("|") == 0  || symbol.compare("[") == 0 || symbol.compare("]") == 0 || symbol.compare("$") == 0) {
                 curr_str = curr_str.substr(symbol_idx + 1);
-                processSymbol(symbol, -1, false);
+                processSymbol(symbol, -1, false, -1);
             } else {
                 curr_str = curr_str.substr(symbol_idx + 2);
                 int length_of_num = curr_str.find(")");
@@ -58,15 +61,34 @@ void LSystemRenderer::renderTree(std::string treestring) {
                 float num = std::strtof(float_string.c_str(), nullptr);
                 curr_str = curr_str.substr(length_of_num + 1);
                 bool terminal_node = checkTerminalNode(curr_str);
-                processSymbol(symbol, num, terminal_node);
+                float nextWidth = findNextWidth(curr_str);
+                processSymbol(symbol, num, terminal_node, nextWidth);
             }
         } else {
             symbols_to_process = false;
         }
     }
+
+    tree_mesh = std::make_unique<OpenGLShape>(true);
+    tree_mesh->setVertexData(mesh_data, mesh_data.size(), VBO::GEOMETRY_LAYOUT::LAYOUT_TRIANGLE_STRIP, mesh_data.size()/8);
+    tree_mesh->setAttribute(ShaderAttrib::POSITION, 3, 0, VBOAttribMarker::DATA_TYPE::FLOAT, false);
+    tree_mesh->setAttribute(ShaderAttrib::NORMAL, 3, 12, VBOAttribMarker::DATA_TYPE::FLOAT, false);
+    tree_mesh->setAttribute(ShaderAttrib::TEXCOORD0, 2, 24, VBOAttribMarker::DATA_TYPE::FLOAT, false);
+    tree_mesh->buildVAO();
+    return tree_mesh;
 }
 
 bool LSystemRenderer::checkTerminalNode(std::string str) {
+    if (str.find("]") < str.find("[")) {
+        return true;
+    }
+
+    if (settings.treetype == TT_SYMPODIAL) {
+        if (current_state.square_bracket_depth >= settings.iterations - 1) {
+            return true;
+        }
+    }
+
     int next_branch = str.find("F");
     for (int i = next_branch - 1; i >= 0; i--) {
         if (str.substr(i, 1).compare("]") == 0) {
@@ -78,11 +100,22 @@ bool LSystemRenderer::checkTerminalNode(std::string str) {
     return false;
 }
 
-void LSystemRenderer::processSymbol(std::string symbol, float arg, bool terminal_node) {
+float LSystemRenderer::findNextWidth(std::string str) {
+    int i = str.find("!") + 2;
+    if (str.find("!") != std::string::npos) {
+        std::string num = str.substr(i, str.find(")", i));
+        return std::strtof(num.c_str(), nullptr);
+    } else {
+        return -1;
+    }
+
+}
+
+void LSystemRenderer::processSymbol(std::string symbol, float arg, bool terminal_node, float next_width) {
     if (symbol.compare("!") == 0) {
         updateCylinderWidth(arg);
     } else if (symbol.compare("F") == 0) {
-        drawBranch(arg, terminal_node);
+        drawBranch(arg, terminal_node, next_width);
     } else if (symbol.compare("+") == 0) {
         rotate(symbol, arg);
     } else if (symbol.compare("-") == 0) {
@@ -110,7 +143,7 @@ void LSystemRenderer::updateCylinderWidth(float width) {
     current_state.cylinder_width = width;
 }
 
-void LSystemRenderer::drawBranch(float length, bool terminal_node) {
+void LSystemRenderer::drawBranch(float length, bool terminal_node, float next_width) {
     float width = current_state.cylinder_width;
     //glm::mat4x4 shrink_mat = glm::scale(glm::vec3(.2,.2,.2));
     glm::mat4x4 scale_mat = glm::scale(glm::vec3(width, length, width));
@@ -134,28 +167,35 @@ void LSystemRenderer::drawBranch(float length, bool terminal_node) {
     glm::vec3 cylinder_center = current_state.position + float(.5) * length * current_state.orientation.H;
     glm::mat4x4 translate_mat =  glm::translate(glm::vec3(cylinder_center));
     glm::mat4x4 model = translate_mat * rotate_mat * scale_mat;
+    glm::mat3x3 inverse_transpose_model = glm::transpose(glm::inverse(glm::mat3x3(model)));
+    float ratio;
+    if (!terminal_node) {
+        ratio = next_width / current_state.cylinder_width;
+    } else {
+        ratio = 1;
+    }
+    std::unique_ptr<BranchTriangles> b = std::make_unique<BranchTriangles>(1, 20, 1, 1, ratio);
+    appendToVertVector(b->getVertData(), model, inverse_transpose_model);
     m_shader->setUniform("model", model);
-    branch->draw();
 
     //move position forward along branch
     current_state.position += length * current_state.orientation.H;
 
     //draw leaf
-    //rotate_mat = glm::rotate(float(M_PI/2.0), glm::vec3(0,0,1));
-    if (terminal_node) {
+    if (terminal_node && settings.use_leaves) {
         scale_mat = glm::scale(glm::vec3(.01, .5, .05));
         translate_mat = glm::translate(glm::vec3(current_state.position));
         model = translate_mat * rotate_mat * scale_mat;
         m_shader->setUniform("model", model);
-        leaf->draw();
+        inverse_transpose_model = glm::transpose(glm::inverse(glm::mat3x3(model)));
+        appendToVertVector(leaf->getVertData(), model, inverse_transpose_model);
     }
 
     //rotate current_state.orientation.H in direction of tropism vector
-    float e = .1;
-    glm::vec3 axis_of_rotation = glm::normalize(glm::cross(current_state.orientation.H, glm::normalize(tropism_vec)));
+    glm::vec3 axis_of_rotation = glm::normalize(glm::cross(current_state.orientation.H, glm::normalize(settings.tropism_vector)));
     if (!(std::isnan(axis_of_rotation.x) || std::isnan(axis_of_rotation.y) || std::isnan(axis_of_rotation.z))) {
         //only perform the tropism rotation if it is defined
-        float angle = e*glm::length(axis_of_rotation);
+        float angle = settings.tropism_constant*glm::length(axis_of_rotation);
         glm::mat4x4 Hrotation = glm::rotate(angle, axis_of_rotation);
         current_state.orientation.H = glm::normalize(glm::vec3(Hrotation * glm::vec4(current_state.orientation.H, 0)));
         current_state.orientation.L = glm::normalize(glm::vec3(Hrotation * glm::vec4(current_state.orientation.L, 0)));
@@ -185,6 +225,7 @@ void LSystemRenderer::rotate(std::string symbol, float angle) {
 
 void LSystemRenderer::pushState() {
     state_stack.push(current_state);
+    current_state.square_bracket_depth++;
 }
 
 void LSystemRenderer::popState() {
@@ -212,4 +253,52 @@ int LSystemRenderer::findFirstOccurence(std::string str) {
         }
     }
     return -1;
+}
+
+void LSystemRenderer::appendToVertVector(const std::vector<float> &vec, glm::mat4x4 model_mat, glm::mat3x3 inverse_transpose_model_mat) {
+    glm::vec3 position = glm::vec3(vec[0],vec[1],vec[2]);
+    glm::vec3 normal = glm::vec3(vec[3],vec[4],vec[5]);
+    glm::vec2 uv = glm::vec2(vec[6], vec[7]);
+    glm::vec3 transformed_pos = glm::vec3(model_mat * glm::vec4(position, 1.0));
+    glm::vec3 transformed_normal = inverse_transpose_model_mat * normal;
+    mesh_data.push_back(transformed_pos.x);
+    mesh_data.push_back(transformed_pos.y);
+    mesh_data.push_back(transformed_pos.z);
+    mesh_data.push_back(transformed_normal.x);
+    mesh_data.push_back(transformed_normal.y);
+    mesh_data.push_back(transformed_normal.z);
+    mesh_data.push_back(uv.x);
+    mesh_data.push_back(uv.y);
+
+    for (int i = 0; i < vec.size(); i += 8) {
+        glm::vec3 position = glm::vec3(vec[i],vec[i+1],vec[i+2]);
+        glm::vec3 normal = glm::vec3(vec[i+3],vec[i+4],vec[i+5]);
+        glm::vec2 uv = glm::vec2(vec[i+6], vec[i+7]);
+        glm::vec3 transformed_pos = glm::vec3(model_mat * glm::vec4(position, 1.0));
+        glm::vec3 transformed_normal = inverse_transpose_model_mat * normal;
+        mesh_data.push_back(transformed_pos.x);
+        mesh_data.push_back(transformed_pos.y);
+        mesh_data.push_back(transformed_pos.z);
+        mesh_data.push_back(transformed_normal.x);
+        mesh_data.push_back(transformed_normal.y);
+        mesh_data.push_back(transformed_normal.z);
+        mesh_data.push_back(uv.x);
+        mesh_data.push_back(uv.y);
+    }
+
+
+    position = glm::vec3(vec[vec.size() - 8],vec[vec.size() - 7],vec[vec.size() - 6]);
+    normal = glm::vec3(vec[vec.size() - 5],vec[vec.size() - 4],vec[vec.size() - 3]);
+    uv = glm::vec2(vec[vec.size() - 2], vec[vec.size() - 1]);
+    transformed_pos = glm::vec3(model_mat * glm::vec4(position, 1.0));
+    transformed_normal = inverse_transpose_model_mat * normal;
+    mesh_data.push_back(transformed_pos.x);
+    mesh_data.push_back(transformed_pos.y);
+    mesh_data.push_back(transformed_pos.z);
+    mesh_data.push_back(transformed_normal.x);
+    mesh_data.push_back(transformed_normal.y);
+    mesh_data.push_back(transformed_normal.z);
+    mesh_data.push_back(uv.x);
+    mesh_data.push_back(uv.y);
+
 }

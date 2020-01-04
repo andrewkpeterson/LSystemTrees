@@ -56,7 +56,11 @@ SOURCES += ui/mainwindow.cpp \
     L_systems/LSystemBuilder.cpp \
     L_systems/LSystemRenderer.cpp \
     L_systems/Branch.cpp \
-    L_systems/Leaf.cpp
+    L_systems/Leaf.cpp \
+    shapes/CircularShapeTriangles.cpp \
+    shapes/DiscTriangles.cpp \
+    L_systems/BranchTriangles.cpp \
+    L_systems/LeafTriangles.cpp
 
 HEADERS += ui/mainwindow.h \
     glew-1.10.0/include/GL/glew.h \
@@ -93,7 +97,11 @@ HEADERS += ui/mainwindow.h \
     L_systems/LSystemBuilder.h \
     L_systems/LSystemRenderer.h \
     L_systems/Branch.h \
-    L_systems/Leaf.h
+    L_systems/Leaf.h \
+    shapes/CircularShapeTriangles.h \
+    shapes/DiscTriangles.h \
+    L_systems/BranchTriangles.h \
+    L_systems/LeafTriangles.h
 
 FORMS += ui/mainwindow.ui
 INCLUDEPATH += glm ui glew-1.10.0/include

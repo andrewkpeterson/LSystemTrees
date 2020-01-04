@@ -108,3 +108,7 @@ void OpenGLShape::createVertVector() {
 int OpenGLShape::calcNumVerts() {
 
 }
+
+const std::vector<float> &OpenGLShape::getVertData() {
+    return m_vertData;
+}

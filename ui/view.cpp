@@ -38,6 +38,8 @@ View::View(QWidget *parent) : QGLWidget(ViewFormat(), parent),
     look = glm::vec3(-1,0,0);
     up = glm::vec3(0,1,0);
     right = glm::vec3(0,0,1);
+
+    settings.loadSettingsOrDefaults();
 }
 
 View::~View()
@@ -94,83 +96,32 @@ void View::initializeGL() {
     m_quad->setAttribute(ShaderAttrib::TEXCOORD0, 2, 3*sizeof(GLfloat), VBOAttribMarker::DATA_TYPE::FLOAT, false);
     m_quad->buildVAO();
 
-    /*
-    tree_builder = std::make_unique<LSystemBuilder>(2);
-    tree_builder->setAxiom("B(x)");
-    tree_builder->addProduction("A","F(x)A(%0,%1)X(12)",true, 2);
-    tree_builder->addProduction("B","F(1)A(%0,%0)Z(6)B(x)Y(27)",true, 1);
-    std::cout << tree_builder->buildString() << std::endl;
-    std::cout << "check" << std::endl;
-    */
+    makeTreeMesh();
 
-    tree_builder = std::make_unique<LSystemBuilder>(10);
-    tree_builder->setAxiom("A(1.0,0.1)");
-    tree_builder->addProduction("A","!(%1)F(%0)[&(c)B(%0*b,%1*.707)]/(e)A(%0*a,%1*.707)",true, 2);
-    tree_builder->addProduction("B","!(%1)F(%0)[-(d)$C(%0*b,%1*.707)]C(%0*a,%1*.707)",true, 2);
-    tree_builder->addProduction("C","!(%1)F(%0)[+(d)$B(%0*b,%1*.707)]B(%0*a,%1*.707)",true, 2);
-    tree_builder->addParameter("a", .9);
-    tree_builder->addParameter("b", .7);
-    tree_builder->addParameter("c", 30);
-    tree_builder->addParameter("d", -30);
-    tree_builder->addParameter("e", 137.5);
-    tree_builder->addParameter("f", .707);
-    treestring = tree_builder->buildString();
-    std::cout << treestring << std::endl;
-    std::cout << treestring.size() << std::endl;
-    std::cout << treestring.max_size() << std::endl;
-    std::cout << "check" << std::endl;
+    branch_triangles = std::make_unique<BranchTriangles>(10,10,1,.5,.5);
 
-    /*
-    tree_builder = std::make_unique<LSystemBuilder>(10);
-    tree_builder->setAxiom("A(1.0,0.1)");
-    tree_builder->addProduction("A","!(%1)F(%0)[&(c)B(%0*a,%1*e)]/(180)[&(d)B(%0*b,%1*e)]",true, 2);
-    tree_builder->addProduction("B","!(%1)F(%0)[+(c)$B(%0*a,%1*e)][-(d)$B(%0*b,%1*e)]",true, 2);
-    tree_builder->addParameter("a", .9);
-    tree_builder->addParameter("b", .8);
-    tree_builder->addParameter("c", 35);
-    tree_builder->addParameter("d", 35);
-    tree_builder->addParameter("e", .707);
-    treestring = tree_builder->buildString();
-    std::cout << treestring << std::endl;
-    std::cout << treestring.size() << std::endl;
-    std::cout << treestring.max_size() << std::endl;
-    std::cout << "check" << std::endl;
-    */
-    /*
-    tree_builder = std::make_unique<LSystemBuilder>(6);
-    tree_builder->setAxiom("!(.01)F(2)/(45)A");
-    tree_builder->addProduction("A","!(.03)F(.5)[&(c)F(.5)A]/(a)[&(c)F(.5)A]/(b)[&(c)F(.5)A]",false, 0);
-    tree_builder->addProduction("F","F(%0*d)",true, 1);
-    tree_builder->addProduction("!","!(%0*e)",true, 1);
-    tree_builder->addParameter("a", 94.74);
-    tree_builder->addParameter("b", 132.63);
-    tree_builder->addParameter("c", 18.95);
-    tree_builder->addParameter("d", 1.109);
-    tree_builder->addParameter("e", 1.732);
-    treestring = tree_builder->buildString();
-    std::cout << treestring << std::endl;
-    std::cout << treestring.size() << std::endl;
-    std::cout << treestring.max_size() << std::endl;
-    std::cout << "check" << std::endl;
-    */
-
-    tree_renderer = std::make_unique<LSystemRenderer>(phong_shader, glm::vec3(.03,-.3,.02));
 }
 
 void View::makeTreeMesh() {
-
+    tree_builder = std::make_unique<LSystemBuilder>(settings.iterations);
+    treestring = tree_builder->buildString();
+    tree_renderer = std::make_unique<LSystemRenderer>(phong_shader);
+    tree_mesh = tree_renderer->renderTree(treestring);
 }
 
 void View::paintGL() {
+
 
     // TODO: Implement the demo rendering here
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     m_view = glm::lookAt(position, position + look, up);
     phong_shader->bind();
     checkError();
+    phong_shader->setUniform("model", glm::mat4x4());
     phong_shader->setUniform("view", m_view);
     phong_shader->setUniform("projection", m_projection);
-    tree_renderer->renderTree(treestring);
+    tree_mesh->draw();
+    //branch_triangles->draw();
     phong_shader->unbind();
 
 
