@@ -35,7 +35,8 @@ struct Settings {
 
     bool use_leaves;
     bool use_flowers;
-    glm::vec3 leaf_size;
+    float leaf_size;
+    float flower_size;
 
     float branch_base_radius;
     float branch_top_radius;
@@ -47,10 +48,15 @@ struct Settings {
     LeafPlacementType leaf_placementype;
 
     float leaf_placement_thickness;
+    int maxleaves_per_branch;
+    float max_displacement_angle;
 
     int iterations;
 
     bool changed_treetype;
+
+    float prob_of_leaf_flower;
+    float prob_of_flower_vs_leaf;
 
 };
 

@@ -3,13 +3,28 @@
 #include "Settings.h"
 #include "gl/datatype/VAO.h"
 #include "gl/shaders/ShaderAttribLocations.h"
+#include <stdlib.h>
+#include <random>
+#include <chrono>
+#include<time.h>
+#include <iostream>
+#include <QString>
+#include <QFile>
+#include <QTextStream>
+#include <QDir>
+#include <QCoreApplication>
 
 LSystemRenderer::LSystemRenderer(std::shared_ptr<CS123::GL::Shader> shader) :
     m_shader(shader),
     cylinder(std::make_unique<Cylinder>(1,20,1,true)),
     branch(std::make_unique<BranchTriangles>(1,20,1, settings.branch_base_radius, settings.branch_top_radius)),
-    leaf(std::make_unique<LeafTriangles>(10,10,1,.8,.6))
+    maple_leaf(std::make_unique<Mesh>(":/mesh/maple.obj")),
+    flower(std::make_unique<Mesh>(":/mesh/small_flower.obj")),
+    leaf(std::make_unique<LeafTriangles>(10,10,1,.8,.6)),
+    leaf_mesh(std::make_unique<Mesh>(":/mesh/leaf.obj")),
+    max_width(0)
 {
+    std::srand(std::time(0));
     symbols = {"!", "F", "+", "-", "&", "^", "#", "/", "|", "[", "]", "$"};
     current_state.position = glm::vec3(0,0,0);
     current_state.orientation.H = glm::vec3(0,1,0);
@@ -70,7 +85,7 @@ std::shared_ptr<OpenGLShape> LSystemRenderer::renderTree(std::string treestring)
     }
 
     tree_mesh = std::make_unique<OpenGLShape>(true);
-    tree_mesh->setVertexData(mesh_data, mesh_data.size(), VBO::GEOMETRY_LAYOUT::LAYOUT_TRIANGLE_STRIP, mesh_data.size()/8);
+    tree_mesh->setVertexData(mesh_data, mesh_data.size(), VBO::GEOMETRY_LAYOUT::LAYOUT_TRIANGLES, mesh_data.size()/8);
     tree_mesh->setAttribute(ShaderAttrib::POSITION, 3, 0, VBOAttribMarker::DATA_TYPE::FLOAT, false);
     tree_mesh->setAttribute(ShaderAttrib::NORMAL, 3, 12, VBOAttribMarker::DATA_TYPE::FLOAT, false);
     tree_mesh->setAttribute(ShaderAttrib::TEXCOORD0, 2, 24, VBOAttribMarker::DATA_TYPE::FLOAT, false);
@@ -115,7 +130,7 @@ void LSystemRenderer::processSymbol(std::string symbol, float arg, bool terminal
     if (symbol.compare("!") == 0) {
         updateCylinderWidth(arg);
     } else if (symbol.compare("F") == 0) {
-        drawBranch(arg, terminal_node, next_width);
+        addBranchAndLeaves(arg, terminal_node, next_width);
     } else if (symbol.compare("+") == 0) {
         rotate(symbol, arg);
     } else if (symbol.compare("-") == 0) {
@@ -140,10 +155,13 @@ void LSystemRenderer::processSymbol(std::string symbol, float arg, bool terminal
 }
 
 void LSystemRenderer::updateCylinderWidth(float width) {
+    if (width > max_width) {
+        max_width = width;
+    }
     current_state.cylinder_width = width;
 }
 
-void LSystemRenderer::drawBranch(float length, bool terminal_node, float next_width) {
+void LSystemRenderer::addBranch(float length, bool terminal_node, float next_width) {
     float width = current_state.cylinder_width;
     //glm::mat4x4 shrink_mat = glm::scale(glm::vec3(.2,.2,.2));
     glm::mat4x4 scale_mat = glm::scale(glm::vec3(width, length, width));
@@ -169,29 +187,50 @@ void LSystemRenderer::drawBranch(float length, bool terminal_node, float next_wi
     glm::mat4x4 model = translate_mat * rotate_mat * scale_mat;
     glm::mat3x3 inverse_transpose_model = glm::transpose(glm::inverse(glm::mat3x3(model)));
     float ratio;
-    if (!terminal_node) {
+    if (!terminal_node && next_width != -1) {
         ratio = next_width / current_state.cylinder_width;
     } else {
         ratio = 1;
     }
-    std::unique_ptr<BranchTriangles> b = std::make_unique<BranchTriangles>(1, 20, 1, 1, ratio);
+    std::unique_ptr<BranchTriangles> b = std::make_unique<BranchTriangles>(1, int(20*current_state.cylinder_width/max_width), 1, 1, ratio);
     appendToVertVector(b->getVertData(), model, inverse_transpose_model);
-    m_shader->setUniform("model", model);
 
-    //move position forward along branch
-    current_state.position += length * current_state.orientation.H;
+}
 
-    //draw leaf
-    if (terminal_node && settings.use_leaves) {
-        scale_mat = glm::scale(glm::vec3(.01, .5, .05));
-        translate_mat = glm::translate(glm::vec3(current_state.position));
-        model = translate_mat * rotate_mat * scale_mat;
-        m_shader->setUniform("model", model);
-        inverse_transpose_model = glm::transpose(glm::inverse(glm::mat3x3(model)));
-        appendToVertVector(leaf->getVertData(), model, inverse_transpose_model);
+void LSystemRenderer::addLeaves(float length, bool terminal_node) {
+    glm::vec3 U = current_state.orientation.U;
+    glm::vec3 H = current_state.orientation.H;
+    glm::vec3 L = current_state.orientation.L;
+    glm::mat4x4 rotate_mat = glm::transpose(glm::mat4x4({U.x, H.x, L.x, 0,
+                                                         U.y, H.y, L.y, 0,
+                                                         U.z, H.z, L.z, 0,
+                                                         0,0,0,1}));
+    //add leaves at terminal nodes
+    std::uniform_real_distribution<float> distribution(0.0,1.0);
+    float rand_num = distribution(generator);
+    bool is_leaf = false;
+    if (rand_num > settings.prob_of_flower_vs_leaf) {
+        is_leaf = true;
     }
+    if (settings.leaf_placementype == LPT_TERMINAL) {
+        if (terminal_node && settings.use_leaves && is_leaf) {
+            //push the leaves in the direction of the branch slightly
+            glm::mat4x4 translate_mat = glm::translate(glm::vec3(current_state.position) + 2*settings.leaf_size * current_state.orientation.H);
+            glm::mat4x4 scale_mat = glm::scale(glm::vec3(settings.leaf_size,settings.leaf_size,settings.leaf_size));
+            glm::mat4x4 model = translate_mat * rotate_mat * scale_mat;
+            glm::mat3x3 inverse_transpose_model = glm::transpose(glm::inverse(glm::mat3x3(model)));
+            appendToVertVector(leaf_mesh->getVertData(), model, inverse_transpose_model);
+        } else if (terminal_node && settings.use_flowers && !is_leaf) {
+            glm::mat4x4 translate_mat = glm::translate(glm::vec3(current_state.position));
+            glm::mat4x4 scale_mat = glm::scale(glm::vec3(settings.flower_size,settings.flower_size,settings.flower_size));
+            glm::mat4x4 model = translate_mat * rotate_mat * scale_mat;
+            glm::mat3x3 inverse_transpose_model = glm::transpose(glm::inverse(glm::mat3x3(model)));
+            appendToVertVector(flower->getVertData(), model, inverse_transpose_model);
+        }
+    }
+}
 
-    //rotate current_state.orientation.H in direction of tropism vector
+void LSystemRenderer::performTropismRotation() {
     glm::vec3 axis_of_rotation = glm::normalize(glm::cross(current_state.orientation.H, glm::normalize(settings.tropism_vector)));
     if (!(std::isnan(axis_of_rotation.x) || std::isnan(axis_of_rotation.y) || std::isnan(axis_of_rotation.z))) {
         //only perform the tropism rotation if it is defined
@@ -201,6 +240,13 @@ void LSystemRenderer::drawBranch(float length, bool terminal_node, float next_wi
         current_state.orientation.L = glm::normalize(glm::vec3(Hrotation * glm::vec4(current_state.orientation.L, 0)));
         current_state.orientation.U = glm::normalize(glm::vec3(Hrotation * glm::vec4(current_state.orientation.U, 0)));
     }
+}
+
+void LSystemRenderer::addBranchAndLeaves(float length, bool terminal_node, float next_width) {
+    addBranch(length, terminal_node, next_width);
+    current_state.position += length * current_state.orientation.H;
+    addLeaves(length, terminal_node);
+    performTropismRotation();
 }
 
 void LSystemRenderer::rotate(std::string symbol, float angle) {
@@ -256,19 +302,6 @@ int LSystemRenderer::findFirstOccurence(std::string str) {
 }
 
 void LSystemRenderer::appendToVertVector(const std::vector<float> &vec, glm::mat4x4 model_mat, glm::mat3x3 inverse_transpose_model_mat) {
-    glm::vec3 position = glm::vec3(vec[0],vec[1],vec[2]);
-    glm::vec3 normal = glm::vec3(vec[3],vec[4],vec[5]);
-    glm::vec2 uv = glm::vec2(vec[6], vec[7]);
-    glm::vec3 transformed_pos = glm::vec3(model_mat * glm::vec4(position, 1.0));
-    glm::vec3 transformed_normal = inverse_transpose_model_mat * normal;
-    mesh_data.push_back(transformed_pos.x);
-    mesh_data.push_back(transformed_pos.y);
-    mesh_data.push_back(transformed_pos.z);
-    mesh_data.push_back(transformed_normal.x);
-    mesh_data.push_back(transformed_normal.y);
-    mesh_data.push_back(transformed_normal.z);
-    mesh_data.push_back(uv.x);
-    mesh_data.push_back(uv.y);
 
     for (int i = 0; i < vec.size(); i += 8) {
         glm::vec3 position = glm::vec3(vec[i],vec[i+1],vec[i+2]);
@@ -286,19 +319,63 @@ void LSystemRenderer::appendToVertVector(const std::vector<float> &vec, glm::mat
         mesh_data.push_back(uv.y);
     }
 
+}
 
-    position = glm::vec3(vec[vec.size() - 8],vec[vec.size() - 7],vec[vec.size() - 6]);
-    normal = glm::vec3(vec[vec.size() - 5],vec[vec.size() - 4],vec[vec.size() - 3]);
-    uv = glm::vec2(vec[vec.size() - 2], vec[vec.size() - 1]);
-    transformed_pos = glm::vec3(model_mat * glm::vec4(position, 1.0));
-    transformed_normal = inverse_transpose_model_mat * normal;
-    mesh_data.push_back(transformed_pos.x);
-    mesh_data.push_back(transformed_pos.y);
-    mesh_data.push_back(transformed_pos.z);
-    mesh_data.push_back(transformed_normal.x);
-    mesh_data.push_back(transformed_normal.y);
-    mesh_data.push_back(transformed_normal.z);
-    mesh_data.push_back(uv.x);
-    mesh_data.push_back(uv.y);
+void LSystemRenderer::saveMeshToFile() {
+    bool found_next_filename = false;
+    QString tree_mesh_path = QCoreApplication::applicationDirPath();
+    tree_mesh_path.append("/../../../tree_meshes");
+    QDir tree_mesh_dir(tree_mesh_path);
+    if (!tree_mesh_dir.exists()) {
+        tree_mesh_dir.mkdir(tree_mesh_path);
+    }
+    int i = 0;
+    QString final_path;
+    while(!found_next_filename) {
+        QString path;
+        path = QCoreApplication::applicationDirPath();
+        QString name("/../../../tree_meshes/tree");
+        name = name.append(std::to_string(i).c_str());
+        name = name.append(".obj");
+        QFile f(path.append(name));
+        if(!f.exists()) {
+            found_next_filename = true;
+            final_path = path;
+        }
+        i++;
+    }
+    QFile file(final_path);
+    if (file.open(QIODevice::ReadWrite))
+    {
+        QTextStream stream( &file );
+        for (int i = 0; i + 23 < mesh_data.size(); i += 24) {
+            char buf[512];
+            std::sprintf(buf, "v %f %f %f", mesh_data[i], mesh_data[i+1], mesh_data[i+2]);
+            stream << buf << endl;
+            std::sprintf(buf,"vn %f %f %f", mesh_data[i+3], mesh_data[i+4], mesh_data[i+5]);
+            stream << buf << endl;
+            std::sprintf(buf, "vt %f %f", mesh_data[i+6], mesh_data[i+7]);
+            stream << buf << endl;
 
+            std::sprintf(buf, "v %f %f %f", mesh_data[i+8], mesh_data[i+9], mesh_data[i+10]);
+            stream << buf << endl;
+            std::sprintf(buf, "vn %f %f %f", mesh_data[i+11], mesh_data[i+12], mesh_data[i+13]);
+            stream << buf << endl;
+            std::sprintf(buf,"vt %f %f", mesh_data[i+14], mesh_data[i+15]);
+            stream << buf << endl;
+
+            std::sprintf(buf, "v %f %f %f", mesh_data[i+16], mesh_data[i+17], mesh_data[i+18]);
+            stream << buf << endl;
+            std::sprintf(buf,"vn %f %f %f", mesh_data[i+19], mesh_data[i+20], mesh_data[i+21]);
+            stream << buf << endl;
+            std::sprintf(buf, "vt %f %f", mesh_data[i+22], mesh_data[i+23]);
+            stream << buf << endl;
+
+            int first = i/24 * 3 + 1;
+            int second = i/24 * 3 + 2;
+            int third = i/24 * 3 + 3;
+            std::sprintf(buf, "f %d/%d/%d %d/%d/%d %d/%d/%d", first, first, first, second, second, second, third, third, third);
+            stream << buf << endl;
+        }
+    }
 }

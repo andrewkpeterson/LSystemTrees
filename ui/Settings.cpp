@@ -20,14 +20,20 @@ void Settings::loadSettingsOrDefaults() {
 
     settings.use_flowers = true;
     settings.use_leaves = true;
-    settings.leaf_size = glm::vec3(.01, .5, .05);
+    settings.leaf_size = .1;
+    settings.flower_size = .1;
 
     settings.branch_base_radius = .5;
     settings.branch_top_radius = .5;
 
     settings.leaf_placement_thickness = 0;
+    settings.maxleaves_per_branch = 2;
+    settings.max_displacement_angle = .3;
 
     settings.iterations = 6;
+    settings.prob_of_flower_vs_leaf = 0;
+    settings.prob_of_leaf_flower = .5;
 
     settings.changed_treetype = false;
+
 }

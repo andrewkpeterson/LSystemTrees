@@ -43,19 +43,19 @@ void Leaf::draw() {
 
 void Leaf::createVertVector() {
     for (int ring = 0; ring < m_rings; ring++) {
-        float lower_height = -.5 + ring * height / m_rings;
-        float upper_height = -.5 + (ring + 1) * height / m_rings;
+        float lower_height = ring * height / m_rings;
+        float upper_height = (ring + 1) * height / m_rings;
         float run = radiusFunc(lower_height) - radiusFunc(upper_height);
         makeCircularStrip(lower_height, radiusFunc(lower_height), height / m_rings, run);
     }
 }
 
 float Leaf::radiusFunc(float y_pos) {
-    return glm::sin(M_PI*(y_pos+.5));
+    return -1/4.0*y_pos*y_pos+1;
 }
 
 float Leaf::radiusDeriv(float y_pos) {
-    return M_PI*glm::cos(M_PI*(y_pos+.5));
+    return -1/2.0*y_pos;
 }
 
 int Leaf::calcNumVerts() {

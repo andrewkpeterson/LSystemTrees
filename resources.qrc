@@ -5,4 +5,11 @@
         <file alias="quad.frag">shaders/quad.frag</file>
         <file alias="quad.vert">shaders/quad.vert</file>
     </qresource>
+    <qresource prefix="/mesh">
+        <file alias="maple.obj">mesh/maple.obj</file>
+        <file alias="flower.obj">mesh/flower.obj</file>
+        <file alias="small_flower.obj">mesh/small_flower.obj</file>
+        <file alias="leaf.obj">mesh/leaf.obj</file>
+    </qresource>
+    <qresource prefix="/tree_meshes"/>
 </RCC>

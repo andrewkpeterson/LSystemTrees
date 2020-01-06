@@ -13,8 +13,8 @@
 BranchTriangles::BranchTriangles(int param1, int param2, float param3, float b_rad, float t_rad) :
     CircularShapeTriangles (param1, param2, param3),
     height(1.0),
-    base(std::make_unique<DiscTriangles>(param1, param2, glm::vec3(0,-1,0), -.5, b_rad)),
-    top(std::make_unique<DiscTriangles>(param1, param2, glm::vec3(0,1,0), .5, t_rad)),
+    base(std::make_unique<DiscTriangles>(1, param2, glm::vec3(0,-1,0), -.5, b_rad)),
+    top(std::make_unique<DiscTriangles>(1, param2, glm::vec3(0,1,0), .5, t_rad)),
     base_rad(b_rad),
     top_rad(t_rad)
 {

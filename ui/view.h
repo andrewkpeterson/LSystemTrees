@@ -23,6 +23,7 @@ public:
     ~View();
 
     void settingsChanged();
+    void saveMeshToFile();
 
 private:
     QTime m_time;

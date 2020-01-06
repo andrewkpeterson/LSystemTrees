@@ -19,8 +19,6 @@ private:
     float radiusDeriv(float y_pos) override;
 
     const float height;
-    const std::unique_ptr<DiscTriangles> base;
-    const std::unique_ptr<DiscTriangles> top;
     float base_rad;
     float top_rad;
 };

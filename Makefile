@@ -785,7 +785,11 @@ qrc_resources.cpp: resources.qrc \
 		shaders/quad.frag \
 		shaders/phong.frag \
 		shaders/quad.vert \
-		shaders/phong.vert
+		shaders/phong.vert \
+		mesh/flower.obj \
+		mesh/small_flower.obj \
+		mesh/leaf.obj \
+		mesh/maple.obj
 	/Applications/qt/5.7/clang_64/bin/rcc -name resources resources.qrc -o qrc_resources.cpp
 
 compiler_moc_header_make_all: moc_mainwindow.cpp moc_view.cpp
@@ -895,7 +899,7 @@ moc_view.cpp: glew-1.10.0/include/GL/glew.h \
 		L_systems/BranchTriangles.h \
 		shapes/CircularShapeTriangles.h \
 		shapes/DiscTriangles.h \
-		L_systems/Leaf.h \
+		L_systems/LeafTriangles.h \
 		ui/view.h \
 		/Applications/qt/5.7/clang_64/bin/moc
 	/Applications/qt/5.7/clang_64/bin/moc $(DEFINES) -D__APPLE__ -D__GNUC__=4 -D__APPLE_CC__ -I/Applications/qt/5.7/clang_64/mkspecs/macx-clang -I/Users/andrewpeterson/Documents/projects/graphics/LSystemTrees -I/Users/andrewpeterson/Documents/projects/graphics/LSystemTrees/glm -I/Users/andrewpeterson/Documents/projects/graphics/LSystemTrees/ui -I/Users/andrewpeterson/Documents/projects/graphics/LSystemTrees/glew-1.10.0/include -I/Applications/qt/5.7/clang_64/lib/QtOpenGL.framework/Headers -I/Applications/qt/5.7/clang_64/lib/QtWidgets.framework/Headers -I/Applications/qt/5.7/clang_64/lib/QtGui.framework/Headers -I/Applications/qt/5.7/clang_64/lib/QtXml.framework/Headers -I/Applications/qt/5.7/clang_64/lib/QtCore.framework/Headers -I/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include/c++/v1 -I/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/clang/11.0.0/include -I/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include -I/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.15.sdk/usr/include -F/Applications/qt/5.7/clang_64/lib ui/view.h -o moc_view.cpp
@@ -1006,7 +1010,7 @@ ui_mainwindow.h: ui/mainwindow.ui \
 		L_systems/BranchTriangles.h \
 		shapes/CircularShapeTriangles.h \
 		shapes/DiscTriangles.h \
-		L_systems/Leaf.h
+		L_systems/LeafTriangles.h
 	/Applications/qt/5.7/clang_64/bin/uic ui/mainwindow.ui -o ui_mainwindow.h
 
 compiler_rez_source_make_all:
@@ -1124,7 +1128,7 @@ mainwindow.o: ui/mainwindow.cpp ui/mainwindow.h \
 		L_systems/BranchTriangles.h \
 		shapes/CircularShapeTriangles.h \
 		shapes/DiscTriangles.h \
-		L_systems/Leaf.h \
+		L_systems/LeafTriangles.h \
 		/Applications/qt/5.7/clang_64/lib/QtOpenGL.framework/Headers/QGLFormat \
 		ui/Settings.h \
 		/Applications/qt/5.7/clang_64/lib/QtCore.framework/Headers/QObject \
@@ -1245,7 +1249,7 @@ view.o: ui/view.cpp ui/view.h \
 		L_systems/BranchTriangles.h \
 		shapes/CircularShapeTriangles.h \
 		shapes/DiscTriangles.h \
-		L_systems/Leaf.h \
+		L_systems/LeafTriangles.h \
 		lib/FileLoader.h \
 		shapes/SpecialShape1.h \
 		gl/GLDebug.h \
@@ -2568,7 +2572,8 @@ LSystemRenderer.o: L_systems/LSystemRenderer.cpp L_systems/LSystemRenderer.h \
 		L_systems/BranchTriangles.h \
 		shapes/CircularShapeTriangles.h \
 		shapes/DiscTriangles.h \
-		L_systems/Leaf.h \
+		L_systems/LeafTriangles.h \
+		shapes/Mesh.h \
 		glm/gtx/transform.hpp \
 		glm/gtc/matrix_transform.hpp \
 		glm/gtc/matrix_transform.inl \
@@ -2577,7 +2582,15 @@ LSystemRenderer.o: L_systems/LSystemRenderer.cpp L_systems/LSystemRenderer.h \
 		/Applications/qt/5.7/clang_64/lib/QtCore.framework/Headers/QObject \
 		/Applications/qt/5.7/clang_64/lib/QtCore.framework/Headers/qobject.h \
 		gl/datatype/VAO.h \
-		gl/shaders/ShaderAttribLocations.h
+		gl/shaders/ShaderAttribLocations.h \
+		/Applications/qt/5.7/clang_64/lib/QtCore.framework/Headers/QString \
+		/Applications/qt/5.7/clang_64/lib/QtCore.framework/Headers/qstring.h \
+		/Applications/qt/5.7/clang_64/lib/QtCore.framework/Headers/QFile \
+		/Applications/qt/5.7/clang_64/lib/QtCore.framework/Headers/qfile.h \
+		/Applications/qt/5.7/clang_64/lib/QtCore.framework/Headers/QTextStream \
+		/Applications/qt/5.7/clang_64/lib/QtCore.framework/Headers/qtextstream.h \
+		/Applications/qt/5.7/clang_64/lib/QtCore.framework/Headers/QDir \
+		/Applications/qt/5.7/clang_64/lib/QtCore.framework/Headers/qdir.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o LSystemRenderer.o L_systems/LSystemRenderer.cpp
 
 Branch.o: L_systems/Branch.cpp L_systems/Branch.h \

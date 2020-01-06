@@ -58,8 +58,8 @@
         <rect>
          <x>0</x>
          <y>0</y>
-         <width>417</width>
-         <height>1458</height>
+         <width>574</width>
+         <height>1459</height>
         </rect>
        </property>
        <property name="minimumSize">
@@ -69,6 +69,13 @@
         </size>
        </property>
        <layout class="QVBoxLayout" name="verticalLayout_3">
+        <item>
+         <widget class="QPushButton" name="pushButton">
+          <property name="text">
+           <string>Create Tree</string>
+          </property>
+         </widget>
+        </item>
         <item>
          <widget class="QGroupBox" name="groupBox">
           <property name="title">
@@ -230,7 +237,6 @@
             </widget>
            </item>
           </layout>
-          <zorder>param1_label</zorder>
           <zorder>param5</zorder>
           <zorder>param1</zorder>
           <zorder>param5_label</zorder>
@@ -363,6 +369,71 @@
            <string/>
           </property>
           <layout class="QGridLayout" name="gridLayout_4">
+           <item row="3" column="0" colspan="4">
+            <widget class="QGroupBox" name="groupBox_4">
+             <property name="title">
+              <string/>
+             </property>
+             <layout class="QGridLayout" name="gridLayout_3">
+              <item row="0" column="0">
+               <widget class="QGroupBox" name="thickness_box">
+                <property name="enabled">
+                 <bool>true</bool>
+                </property>
+                <property name="title">
+                 <string/>
+                </property>
+                <layout class="QGridLayout" name="gridLayout_6">
+                 <item row="0" column="0">
+                  <widget class="QLabel" name="label_2">
+                   <property name="text">
+                    <string>Prob Of Leaf vs. Prob Of Flower</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="0" column="2">
+                  <widget class="QLabel" name="prob">
+                   <property name="text">
+                    <string>0.00</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="0" column="1">
+                  <widget class="QSlider" name="horizontalSlider_2">
+                   <property name="maximum">
+                    <number>100</number>
+                   </property>
+                   <property name="value">
+                    <number>0</number>
+                   </property>
+                   <property name="orientation">
+                    <enum>Qt::Horizontal</enum>
+                   </property>
+                  </widget>
+                 </item>
+                </layout>
+               </widget>
+              </item>
+             </layout>
+            </widget>
+           </item>
+           <item row="0" column="1">
+            <widget class="QLabel" name="label_38">
+             <property name="text">
+              <string> Leaves/Flowers</string>
+             </property>
+             <property name="alignment">
+              <set>Qt::AlignCenter</set>
+             </property>
+            </widget>
+           </item>
+           <item row="8" column="0">
+            <widget class="QLabel" name="label_32">
+             <property name="text">
+              <string>Leaf Size</string>
+             </property>
+            </widget>
+           </item>
            <item row="2" column="2">
             <widget class="QCheckBox" name="show_flowers">
              <property name="text">
@@ -373,17 +444,10 @@
              </property>
             </widget>
            </item>
-           <item row="12" column="1">
-            <widget class="QLineEdit" name="leaf_x">
-             <property name="text">
-              <string>.01</string>
-             </property>
-            </widget>
-           </item>
-           <item row="12" column="0">
+           <item row="11" column="0">
             <widget class="QLabel" name="label_37">
              <property name="text">
-              <string>Leaf Width</string>
+              <string>Flower Size</string>
              </property>
             </widget>
            </item>
@@ -397,128 +461,17 @@
              </property>
             </widget>
            </item>
-           <item row="3" column="0" colspan="4">
-            <widget class="QGroupBox" name="groupBox_4">
-             <property name="title">
-              <string/>
-             </property>
-             <layout class="QGridLayout" name="gridLayout_3">
-              <item row="0" column="0">
-               <widget class="QRadioButton" name="terminal_nodes">
-                <property name="text">
-                 <string>Leaves Only At Terminal Nodes</string>
-                </property>
-                <property name="checked">
-                 <bool>true</bool>
-                </property>
-               </widget>
-              </item>
-              <item row="3" column="0">
-               <widget class="QGroupBox" name="thickness_box">
-                <property name="enabled">
-                 <bool>true</bool>
-                </property>
-                <property name="title">
-                 <string/>
-                </property>
-                <layout class="QVBoxLayout" name="verticalLayout_4">
-                 <item>
-                  <widget class="QLabel" name="label_29">
-                   <property name="enabled">
-                    <bool>true</bool>
-                   </property>
-                   <property name="text">
-                    <string>Leaves Appear at Branch Thickness:</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item>
-                  <widget class="QLineEdit" name="thickness">
-                   <property name="enabled">
-                    <bool>true</bool>
-                   </property>
-                   <property name="text">
-                    <string>0</string>
-                   </property>
-                  </widget>
-                 </item>
-                </layout>
-               </widget>
-              </item>
-              <item row="1" column="0">
-               <widget class="QRadioButton" name="random_leaf_placement">
-                <property name="text">
-                 <string>Random Leaf Placement</string>
-                </property>
-               </widget>
-              </item>
-             </layout>
-            </widget>
-           </item>
-           <item row="6" column="0" colspan="4">
-            <widget class="QGroupBox" name="groupBox_3">
-             <property name="title">
-              <string/>
-             </property>
-             <property name="flat">
-              <bool>false</bool>
-             </property>
-             <property name="checkable">
-              <bool>false</bool>
-             </property>
-             <layout class="QHBoxLayout" name="horizontalLayout_2">
-              <item>
-               <widget class="QLabel" name="label_31">
-                <property name="text">
-                 <string>Leaf Type</string>
-                </property>
-               </widget>
-              </item>
-              <item>
-               <widget class="QRadioButton" name="maple_leaf">
-                <property name="text">
-                 <string comment="1">Maple</string>
-                </property>
-               </widget>
-              </item>
-              <item>
-               <widget class="QRadioButton" name="long_leaf">
-                <property name="text">
-                 <string comment="1">Round</string>
-                </property>
-                <property name="checked">
-                 <bool>true</bool>
-                </property>
-               </widget>
-              </item>
-             </layout>
-             <zorder>maple_leaf</zorder>
-             <zorder>long_leaf</zorder>
-             <zorder>long_leaf</zorder>
-             <zorder>label_31</zorder>
-            </widget>
-           </item>
-           <item row="9" column="1">
-            <widget class="QLineEdit" name="leaf_z">
+           <item row="11" column="1">
+            <widget class="QLineEdit" name="flower_size">
              <property name="text">
-              <string>.05</string>
+              <string>.1</string>
              </property>
             </widget>
            </item>
-           <item row="9" column="0">
-            <widget class="QLabel" name="label_32">
+           <item row="8" column="1">
+            <widget class="QLineEdit" name="leaf_size">
              <property name="text">
-              <string>Leaf Length</string>
-             </property>
-            </widget>
-           </item>
-           <item row="0" column="1">
-            <widget class="QLabel" name="label_38">
-             <property name="text">
-              <string> Leaves/Flowers</string>
-             </property>
-             <property name="alignment">
-              <set>Qt::AlignCenter</set>
+              <string>.1</string>
              </property>
             </widget>
            </item>
@@ -533,142 +486,7 @@
           <property name="flat">
            <bool>true</bool>
           </property>
-          <layout class="QHBoxLayout" name="horizontalLayout">
-           <item>
-            <widget class="Line" name="line_10">
-             <property name="orientation">
-              <enum>Qt::Horizontal</enum>
-             </property>
-            </widget>
-           </item>
-          </layout>
-         </widget>
-        </item>
-        <item>
-         <widget class="QGroupBox" name="groupBox_9">
-          <property name="title">
-           <string/>
-          </property>
-          <layout class="QGridLayout" name="gridLayout_5">
-           <item row="2" column="1">
-            <widget class="QLabel" name="top_radius_top">
-             <property name="sizePolicy">
-              <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
-               <horstretch>0</horstretch>
-               <verstretch>0</verstretch>
-              </sizepolicy>
-             </property>
-             <property name="maximumSize">
-              <size>
-               <width>30</width>
-               <height>30</height>
-              </size>
-             </property>
-             <property name="text">
-              <string>0.0</string>
-             </property>
-             <property name="scaledContents">
-              <bool>false</bool>
-             </property>
-            </widget>
-           </item>
-           <item row="6" column="0">
-            <widget class="QSlider" name="bottom_branch_raidus">
-             <property name="sizePolicy">
-              <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
-               <horstretch>0</horstretch>
-               <verstretch>0</verstretch>
-              </sizepolicy>
-             </property>
-             <property name="minimumSize">
-              <size>
-               <width>50</width>
-               <height>0</height>
-              </size>
-             </property>
-             <property name="value">
-              <number>50</number>
-             </property>
-             <property name="orientation">
-              <enum>Qt::Horizontal</enum>
-             </property>
-            </widget>
-           </item>
-           <item row="0" column="0">
-            <widget class="QLabel" name="label_43">
-             <property name="text">
-              <string>Branch Shape Prameters</string>
-             </property>
-             <property name="alignment">
-              <set>Qt::AlignCenter</set>
-             </property>
-            </widget>
-           </item>
-           <item row="6" column="1">
-            <widget class="QLabel" name="botto_raidus_val">
-             <property name="sizePolicy">
-              <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
-               <horstretch>0</horstretch>
-               <verstretch>0</verstretch>
-              </sizepolicy>
-             </property>
-             <property name="maximumSize">
-              <size>
-               <width>30</width>
-               <height>30</height>
-              </size>
-             </property>
-             <property name="text">
-              <string>0.0</string>
-             </property>
-             <property name="scaledContents">
-              <bool>false</bool>
-             </property>
-            </widget>
-           </item>
-           <item row="3" column="0">
-            <widget class="QLabel" name="label_39">
-             <property name="text">
-              <string>Bottom Radius</string>
-             </property>
-             <property name="alignment">
-              <set>Qt::AlignCenter</set>
-             </property>
-            </widget>
-           </item>
-           <item row="1" column="0">
-            <widget class="QLabel" name="label_34">
-             <property name="text">
-              <string>Top Radius</string>
-             </property>
-             <property name="alignment">
-              <set>Qt::AlignCenter</set>
-             </property>
-            </widget>
-           </item>
-           <item row="2" column="0">
-            <widget class="QSlider" name="top_branch_radius">
-             <property name="sizePolicy">
-              <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
-               <horstretch>0</horstretch>
-               <verstretch>0</verstretch>
-              </sizepolicy>
-             </property>
-             <property name="minimumSize">
-              <size>
-               <width>50</width>
-               <height>0</height>
-              </size>
-             </property>
-             <property name="value">
-              <number>50</number>
-             </property>
-             <property name="orientation">
-              <enum>Qt::Horizontal</enum>
-             </property>
-            </widget>
-           </item>
-          </layout>
+          <layout class="QHBoxLayout" name="horizontalLayout"/>
          </widget>
         </item>
         <item>
@@ -690,14 +508,13 @@
        <zorder>line_11</zorder>
        <zorder>line_12</zorder>
        <zorder>export_to_obj</zorder>
-       <zorder>view</zorder>
        <zorder>groupBox_2</zorder>
        <zorder>groupBox</zorder>
        <zorder>groupBox_6</zorder>
        <zorder>groupBox_7</zorder>
        <zorder>groupBox_8</zorder>
-       <zorder>groupBox_9</zorder>
        <zorder>groupBox_5</zorder>
+       <zorder>pushButton</zorder>
       </widget>
      </widget>
     </item>

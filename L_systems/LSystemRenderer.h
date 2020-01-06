@@ -7,6 +7,8 @@
 #include "shapes/Cylinder.h"
 #include "BranchTriangles.h"
 #include "LeafTriangles.h"
+#include "shapes/Mesh.h"
+#include <random>
 
 
 struct Orientation {
@@ -30,6 +32,7 @@ public:
     LSystemRenderer(std::shared_ptr<CS123::GL::Shader> shader);
     ~LSystemRenderer();
     std::shared_ptr<OpenGLShape> renderTree(std::string treestring);
+    void saveMeshToFile();
 
 private:
     std::shared_ptr<CS123::GL::Shader> m_shader;
@@ -41,11 +44,20 @@ private:
     std::unique_ptr<LeafTriangles> leaf;
     std::shared_ptr<OpenGLShape> tree_mesh;
     std::vector<float> mesh_data;
+    std::unique_ptr<Mesh> maple_leaf;
+    std::unique_ptr<Mesh> flower;
+    std::unique_ptr<Mesh> leaf_mesh;
+    std::default_random_engine generator;
+    float max_width;
+
 
     int findFirstOccurence(std::string str);
     void processSymbol(std::string symbol, float arg, bool terminal_node, float nextWidth);
     void updateCylinderWidth(float width);
-    void drawBranch(float length, bool terminal_node, float next_width);
+    void addBranchAndLeaves(float length, bool terminal_node, float next_width);
+    void addBranch(float length, bool terminal_node, float next_width);
+    void performTropismRotation();
+    void addLeaves(float length, bool terminal_node);
     void rotate(std::string symbol, float arg);
     void pushState();
     void popState();

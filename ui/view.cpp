@@ -279,8 +279,11 @@ void View::tick() {
     update();
 }
 
+void View::saveMeshToFile() {
+    tree_renderer->saveMeshToFile();
+}
+
 void View::settingsChanged() {
     //remake the tree
     makeTreeMesh();
-
 }
